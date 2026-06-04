@@ -72,9 +72,13 @@ export function drawTimeline(canvas, { grid, durationSec, currentAudioSec }) {
       ctx.fillStyle = COLOR.axisText;
       ctx.font = "11px ui-monospace, monospace";
       const barNumber = (beat - grid.pickupBeats) / 4 + 1;
-      // Just the number (no "bar " prefix) -- when beats are close together
-      // the longer label overlaps the next downbeat's tick.
-      ctx.fillText(String(barNumber), x + 3, cssH * 0.13);
+      // Just the number (no "bar " prefix) and horizontally centred above
+      // the downbeat tick. textAlign center pins the text's centre to x;
+      // restored to default after so the pickup labels below stay
+      // left-aligned.
+      ctx.textAlign = "center";
+      ctx.fillText(String(barNumber), x, cssH * 0.13);
+      ctx.textAlign = "left";
     }
   }
 
