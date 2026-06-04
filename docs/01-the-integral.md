@@ -14,6 +14,22 @@ $$t(\beta) = \int_{0}^{\beta} \frac{60}{\text{BPM}(b)}\, db$$
 The four regimes below are the same integral evaluated for four different shapes of
 $\text{BPM}(b)$.
 
+## The whole shape, at a glance
+
+```mermaid
+flowchart LR
+  BPM["BPM(β)<br/>tempo curve"] -->|"∫ 60/BPM(b) db"| t["t(β)<br/>warp map"]
+  t -->|"d/dβ · 60"| BPM
+  t -->|"invert (bisect if no formula)"| sToB["β(t)<br/>seconds → beats"]
+  classDef obj fill:#faf7f2,stroke:#b8470b,stroke-width:1.5px,color:#2a2a30;
+  class BPM,t,sToB obj;
+```
+
+Read the round trip clockwise. Integrate tempo to get a warp map; differentiate the
+warp map to recover tempo; invert the warp map to go from a second back to a beat.
+Each chapter formalises one piece of this loop for a different shape of
+$\text{BPM}(b)$.
+
 <!--@include: ./.generated/one-idea.md-->
 
 ## Regime 1 — Constant tempo
@@ -36,6 +52,8 @@ The integral is a running sum of rectangle areas — a Riemann sum that happens 
 exact because the integrand is genuinely constant on each piece. The warp map is
 piecewise-LINEAR, kinking at every marker where the slope changes.
 
+<RiemannRectangles />
+
 <!--@include: ./.generated/regime-piecewise.md-->
 
 ## Regime 3 — Linear ramp (the surprising one)
@@ -49,6 +67,8 @@ A *linear* change in tempo produces a *logarithmic* time map. The curve bends �
 if you naively interpolate beat positions in a straight line you will drift against
 the audio. The code derives exactly why, naming the calculus rule
 $\int 1/(p+qx)\,dx = (1/q)\ln|p+qx|$ as it is used.
+
+<LogarithmicBend />
 
 <!--@include: ./.generated/regime-ramp.md-->
 
@@ -73,6 +93,8 @@ trying to solve symbolically and **evaluate it numerically**:
 This regime is the reason every real DAW integrates tempo numerically rather than
 reaching for a formula: once tempo automation can be an arbitrary curve, a formula
 usually doesn't exist.
+
+<TrapezoidSlices />
 
 <!--@include: ./.generated/regime-curved.md-->
 

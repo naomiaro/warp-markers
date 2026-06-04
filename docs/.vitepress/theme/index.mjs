@@ -5,6 +5,9 @@ import DefaultTheme from "vitepress/theme";
 import VisualiseDemo from "../../components/VisualiseDemo.vue";
 import MeterDemo from "../../components/MeterDemo.vue";
 import MessyDataDemo from "../../components/MessyDataDemo.vue";
+import RiemannRectangles from "../../components/RiemannRectangles.vue";
+import TrapezoidSlices from "../../components/TrapezoidSlices.vue";
+import LogarithmicBend from "../../components/LogarithmicBend.vue";
 import "./custom.css";
 
 export default {
@@ -13,5 +16,8 @@ export default {
     app.component("VisualiseDemo", VisualiseDemo);
     app.component("MeterDemo", MeterDemo);
     app.component("MessyDataDemo", MessyDataDemo);
+    app.component("RiemannRectangles", RiemannRectangles);
+    app.component("TrapezoidSlices", TrapezoidSlices);
+    app.component("LogarithmicBend", LogarithmicBend);
   },
 };
