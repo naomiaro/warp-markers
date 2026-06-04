@@ -1,0 +1,25 @@
+{
+  "name": "@warp-math/docs",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "VitePress site for the warp-math chapters. Demos here import the chapter math directly, never a copy.",
+  "scripts": {
+    "predocs:dev": "node scripts/extract-derivations.mjs",
+    "predocs:build": "node scripts/extract-derivations.mjs",
+    "docs:dev": "vitepress dev .",
+    "docs:build": "vitepress build .",
+    "docs:preview": "vitepress preview ."
+  },
+  "dependencies": {
+    "@warp-math/the-math": "*",
+    "@warp-math/meter": "*",
+    "@warp-math/messy-data": "*",
+    "chart.js": "^4.4.0"
+  },
+  "devDependencies": {
+    "markdown-it-mathjax3": "^4.3.2",
+    "vitepress": "^1.5.0",
+    "vue": "^3.4.0"
+  }
+}

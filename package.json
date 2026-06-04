@@ -10,7 +10,8 @@
     "02-visualise",
     "03-real-audio",
     "04-meter",
-    "05-messy-data"
+    "05-messy-data",
+    "docs"
   ],
   "scripts": {
     "test": "npm run test --workspaces --if-present",
