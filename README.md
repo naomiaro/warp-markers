@@ -80,6 +80,7 @@ time running backwards, and the code rejects it.
 02-visualise/     the integral made visible: tempo curve + draggable warp map.
 03-real-audio/    parse a beat_this .beats file and play it back through the map.
 04-meter/         the second layer: bar arithmetic. No calculus, just modulo.
+05-messy-data/    when the data is messy: anomaly detection on real beat maps.
 ```
 
 ### 01-the-math
@@ -123,6 +124,18 @@ the accent click to a new beat pattern *while the tempo holds steady*, and a dra
 warp marker shifts every downbeat's second-time without changing which beats are
 downbeats. Two edits, two layers, one timeline.
 
+### 05-messy-data
+Every example up to here has fed the math a tidy marker list. Real beat_this output
+is noisier: timestamps jitter by milliseconds, the tracker occasionally drops or
+doubles a beat, and the seconds column can lose monotonicity under careless editing.
+This chapter *sees* those problems — `instantaneousBpms` exposes the raw per-segment
+BPM signal, `flagAnomalies` reports `too-slow` / `too-fast` / `jump` hits against
+tunable thresholds, and `monotonicityHoles` catches the fatal kind (the warp map's
+seconds axis going backwards, which makes the inverse undefined). The interactive
+inspector renders the BPM line so dropped beats appear as dips and doubled beats
+appear as spikes, with flagged segments in red. The chapter stops at detection;
+fixing is a judgement call, which is exactly why warp markers are hand-editable.
+
 ## Meter is not tempo
 
 It's tempting to bundle meter into the tempo map ("a 4/4 piece is a tempo map plus
@@ -159,6 +172,18 @@ rectangles, a linear ramp gives a logarithm, and an arbitrary curve gives no for
 at all — so you integrate it numerically. The same `t(β) = ∫₀^β 60/BPM(b) db` underlies
 all four; only the difficulty changes. That is the thing this repo is trying to make
 obvious.
+
+## The round trip
+
+The piece that closes the loop, and that a DAW's live BPM readout relies on without
+saying so out loud, is the other direction: instantaneous tempo is the *derivative*
+of the warp map. Started with `dβ/dt = BPM/60`, integrated it to recover `t(β)`,
+inverted that to get `β(t)`. Differentiating `t(β)` gives `BPM(β) = 60·dβ/dt` back —
+the very rate we started from. Each map's `bpmAt(β)` is that derivative, evaluated
+analytically where a formula exists. A test in `01-the-math/tempo-map.test.js`
+estimates the derivative numerically from `beatsToSeconds` and confirms it matches
+`bpmAt` across all four regimes — the explicit proof that the integral and the
+derivative are two views of the same object.
 
 ## License
 
