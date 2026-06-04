@@ -38,11 +38,28 @@ evaluating or inverting this integral for different shapes of `BPM(b)`.
 | --- | --- | --- |
 | **Constant** `BPM = K` | `t = (60/K)·β` (constant rule) | a straight line |
 | **Piecewise-constant** (what beat_this gives) | a running sum of rectangles | piecewise-linear, kinking at each marker |
-| **Linear ramp** (accelerando) | `t = (60/s)·ln(BPM(β)/b₀)` | a curve — a logarithm |
+| **Linear ramp** (accelerando) | `t = (60/s)·ln(BPM(β)/b₀)` (closed form) | a curve — a logarithm |
+| **Curved** (ease in/out, `BPM = b₀ + Δ·(β/L)^k`) | **no closed form** — integrate numerically | a curve with no simple equation |
 
-The last row is the payoff. A *linear* change in tempo produces a *logarithmic*
-time map: the curve bends, and if you naively interpolate beat positions in a
-straight line you will drift against the audio. The code derives exactly why.
+Read the table top to bottom as a story about the integral, not four separate
+tricks. The tempo's *shape* decides how hard the integral is:
+
+- **Constant** is one division.
+- **Piecewise-constant** is an exact sum of rectangles, because the function really
+  is flat on each piece.
+- **Linear ramp** is the surprise: a *linear* change in tempo produces a
+  *logarithmic* time map. The curve bends, and if you naively interpolate beat
+  positions in a straight line you will drift against the audio. The code derives why.
+- **Curved** is where the antiderivative runs out. For a general easing exponent `k`
+  the integrand `60 / (b₀ + Δ·(b/L)^k)` has no elementary closed form, so you stop
+  solving by hand and **evaluate the integral numerically** (summing thin slices —
+  the trapezoidal rule). `k = 1` recovers the linear ramp exactly; `k > 1` eases in,
+  `k < 1` eases out.
+
+That last row is the reason every real DAW integrates tempo numerically rather than
+reaching for a formula: once tempo automation can be an arbitrary curve, a formula
+usually doesn't exist. The repo arrives at numerical integration as the *answer to a
+problem*, not as a fallback introduced out of nowhere.
 
 ## What "pinning" actually does
 
@@ -94,8 +111,11 @@ align the first downbeat to a bar boundary.
 
 If tempo never changed, none of this would need an integral — it would be one
 division. The integral exists precisely *because* tempo varies, and the shape of how
-it varies (step vs. ramp) is what decides whether the time map is a sum of rectangles
-or a logarithm. That is the thing this repo is trying to make obvious.
+it varies decides how hard it is to evaluate: a step function gives a sum of
+rectangles, a linear ramp gives a logarithm, and an arbitrary curve gives no formula
+at all — so you integrate it numerically. The same `t(β) = ∫₀^β 60/BPM(b) db` underlies
+all four; only the difficulty changes. That is the thing this repo is trying to make
+obvious.
 
 ## License
 
