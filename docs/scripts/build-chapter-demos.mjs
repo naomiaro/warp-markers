@@ -33,6 +33,7 @@ const CHAPTERS = [
   "03-real-audio",
   "04-meter",
   "05-messy-data",
+  "06-repair",
 ];
 
 if (!existsSync(publicDir)) mkdirSync(publicDir, { recursive: true });

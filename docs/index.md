@@ -30,6 +30,9 @@ features:
   - title: 05 · When the data is messy
     details: Detecting dropped beats, doubled beats, and broken monotonicity in real tracker output.
     link: /05-messy-data
+  - title: 06 · Fixing a beat map by hand
+    details: Where ch.02 (pin) and ch.04 (meter) finally meet. Move, delete, and insert beats against a live meter validator.
+    link: /06-repair
 ---
 
 ## The one idea

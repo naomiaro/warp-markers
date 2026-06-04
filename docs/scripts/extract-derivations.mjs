@@ -24,6 +24,7 @@ const SOURCES = [
   "01-the-math/warp-marker.js",
   "04-meter/meter.js",
   "05-messy-data/robust.js",
+  "06-repair/repair.js",
 ];
 
 const SENTINEL = /^\s*\/\/\s*<doc\s+id="([\w-]+)">\s*$([\s\S]*?)^\s*\/\/\s*<\/doc>\s*$/gm;

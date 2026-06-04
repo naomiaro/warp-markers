@@ -1,3 +1,4 @@
+// <doc id="repair-intro">
 // ===========================================================================
 // repair.js -- hand-edit operations for a beat map
 //
@@ -23,6 +24,7 @@
 //   - dropped/missing beat -> insertBeat
 //   - mistimed beat        -> moveBeat (a thin wrapper over ch.02's pin)
 // ===========================================================================
+// </doc>
 import { pin } from "@warp-math/the-math/warp-marker.js";
 import { barPositionOf, meterMapFromBeats } from "@warp-math/meter/meter.js";
 
