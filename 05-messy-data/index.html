@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>warp-math · when the data is messy</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>warp-math · when the data is messy</h1>
+      <p class="lede">
+        Every example up to here has fed the math a tidy marker list. Real
+        beat_this output is noisier: timestamps jitter by milliseconds, the
+        tracker occasionally drops or doubles a beat, and the seconds column
+        can lose monotonicity under careless editing. This chapter
+        <em>sees</em> those problems &mdash; it does not fix them. Fixing is a
+        judgement call, which is precisely why warp markers are hand-editable.
+      </p>
+    </header>
+
+    <section class="grid">
+      <fieldset class="input-col">
+        <legend>beat timestamps (one per line, seconds)</legend>
+        <textarea id="input" spellcheck="false" rows="22"></textarea>
+        <div class="controls">
+          <button type="button" id="load-jittery">jittery + dropped + doubled</button>
+          <button type="button" id="load-clean">clean steady (no anomalies)</button>
+          <button type="button" id="load-broken">non-monotonic (the fatal kind)</button>
+        </div>
+        <fieldset class="thresholds">
+          <legend>thresholds</legend>
+          <label>low BPM <input type="number" id="th-low" value="30" min="1" max="500" /></label>
+          <label>high BPM <input type="number" id="th-high" value="300" min="1" max="500" /></label>
+          <label>jump ratio <input type="number" id="th-jump" value="1.5" min="1.01" max="10" step="0.05" /></label>
+        </fieldset>
+      </fieldset>
+
+      <div class="chart-col">
+        <p class="summary" id="summary">paste or load a sample to begin.</p>
+        <figure>
+          <div class="chart-wrap"><canvas id="bpm-chart"></canvas></div>
+          <figcaption>
+            Per-segment BPM along the marker list. <span class="dot-ok">dots</span> are clean
+            segments; <span class="dot-flag">dots</span> are flagged by
+            <code>flagAnomalies</code>. A clean recording is a flat line in this view;
+            spikes and dips are exactly the dropped/doubled beats the chapter is about.
+          </figcaption>
+        </figure>
+        <div class="anomalies">
+          <h2>anomalies</h2>
+          <p class="hint">
+            Empty when the data is tidy. When it isn't, this is the report
+            <code>flagAnomalies</code> hands back &mdash; one row per heuristic
+            hit, with the segment index, the kind, and the detail. None of
+            this is a correction; the math layer trusts you to decide.
+          </p>
+          <table id="flag-table">
+            <thead><tr><th>segment</th><th>kind</th><th>detail</th></tr></thead>
+            <tbody></tbody>
+          </table>
+          <p id="monotonicity" class="fatal" hidden></p>
+        </div>
+      </div>
+    </section>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
