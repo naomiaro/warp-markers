@@ -1,0 +1,17 @@
+{
+  "name": "warp-math",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Educational repo for tempo maps and warp markers: the math, a visualisation, and real audio playback.",
+  "license": "MIT",
+  "workspaces": [
+    "01-the-math",
+    "02-visualise",
+    "03-real-audio"
+  ],
+  "scripts": {
+    "test": "npm run test --workspaces --if-present",
+    "test:math": "npm run test --workspace 01-the-math"
+  }
+}
