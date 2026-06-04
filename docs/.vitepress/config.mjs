@@ -20,11 +20,43 @@ export default withMermaid(defineConfig({
     "The math behind tempo maps and warp markers: an integral, made visible, made audible.",
   cleanUrls: true,
 
+  // Analytics: goatcounter. The hostname below is a placeholder -- create
+  // a goatcounter site at https://warp-math.goatcounter.com (or whatever
+  // name you prefer) and update the URL. Removing this block disables
+  // analytics entirely.
+  head: [
+    [
+      "script",
+      {
+        "data-goatcounter": "https://warp-math.goatcounter.com/count",
+        async: "",
+        src: "//gc.zgo.at/count.js",
+      },
+    ],
+  ],
+
+  // Sitemap.xml at /warp-markers/sitemap.xml. The hostname is the BARE
+  // domain; transformItems prepends the base path so each URL ends up as
+  // https://naomiaro.github.io/warp-markers/<page>. (VitePress's sitemap
+  // emits paths relative to the site root, NOT including `base`, so the
+  // transform is the bridge between the two.)
+  sitemap: {
+    hostname: "https://naomiaro.github.io",
+    transformItems: (items) =>
+      items.map((item) => ({ ...item, url: `warp-markers/${item.url}` })),
+  },
+
   markdown: {
     math: true,
   },
 
   themeConfig: {
+    // Local search: indexes the chapter pages client-side, no external
+    // service. Helps both in-site discovery AND -- via the indexed page
+    // titles -- search engines that crawl the JSON the local provider
+    // ships with the bundle.
+    search: { provider: "local" },
+
     nav: [
       { text: "Home", link: "/" },
       { text: "01 The integral", link: "/01-the-integral" },
