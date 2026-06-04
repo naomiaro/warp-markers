@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>warp-math · real audio</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>warp-math · real audio</h1>
+      <p class="lede">
+        The production path. Parse a beat_this <code>.beats</code> file,
+        build a tempo model with <code>01-the-math</code>, play it back, and
+        watch the playhead's musical position (β) follow the audio clock through
+        the warp map. The pickup-beat offset that the teaching layer skips lives
+        in <code>grid.js</code>, kept clearly separate from the time shift that
+        anchors the model at <code>{0,0}</code>.
+      </p>
+    </header>
+
+    <section class="loaders">
+      <fieldset>
+        <legend>1. beats file (required)</legend>
+        <input type="file" id="beats-input" accept=".beats,.txt" />
+        <p class="hint">
+          Or click <button type="button" id="use-sample-beats" class="link">use the bundled sample</button>
+          (14 beats at a steady 120&nbsp;BPM, with a 2-beat pickup before bar&nbsp;1).
+        </p>
+        <p id="beats-status" class="status">no beats loaded</p>
+      </fieldset>
+
+      <fieldset>
+        <legend>2. audio file (optional)</legend>
+        <input type="file" id="audio-input" accept="audio/*" />
+        <p class="hint">
+          Drop your audio that goes with the beats file. Without it we play a
+          synthetic <em>click track</em> at every beat -- enough to verify the
+          grid lines up.
+        </p>
+        <p id="audio-status" class="status">no audio loaded · synth-click mode</p>
+      </fieldset>
+    </section>
+
+    <section class="transport">
+      <button type="button" id="play-pause">play</button>
+      <button type="button" id="rewind">rewind</button>
+      <span class="readouts">
+        audio clock: <output id="ro-audiosec">—</output> s ·
+        β = <output id="ro-beta">—</output> ·
+        bpm here = <output id="ro-bpm">—</output>
+      </span>
+    </section>
+
+    <section class="timeline-wrap">
+      <canvas id="timeline"></canvas>
+    </section>
+
+    <section class="debug">
+      <details>
+        <summary>debug: round-trip table (audio time → β → audio time)</summary>
+        <p class="hint">
+          For each beat in the file: the time we PARSED, the beat we INFER
+          via <code>secondsToBeats</code>, the time we re-derive via
+          <code>beatsToSeconds</code>, and the residual. Should be zero to
+          numerical noise for a piecewise-constant model.
+        </p>
+        <table id="debug-table">
+          <thead><tr><th>i</th><th>parsed t</th><th>β = s→b(t)</th><th>t' = b→s(β)</th><th>residual</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </details>
+    </section>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

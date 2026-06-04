@@ -1,0 +1,76 @@
+:root {
+  --bg: #faf7f2;
+  --ink: #2a2a30;
+  --accent: #b8470b;
+  --rule: #cdc9c1;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: ui-serif, Georgia, "Times New Roman", serif;
+  color: var(--ink);
+  background: var(--bg);
+  margin: 0;
+  padding: 2rem clamp(1rem, 4vw, 3rem);
+  line-height: 1.5;
+}
+
+header { border-bottom: 1px solid var(--rule); padding-bottom: 1rem; margin-bottom: 1.5rem; }
+h1 { font-size: 1.6rem; margin: 0 0 0.5rem 0; }
+.lede { max-width: 64ch; margin: 0; color: #4a4a55; }
+
+code, output { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.95em; }
+
+.loaders { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+
+fieldset {
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 0.75rem 1rem;
+  background: white;
+}
+legend { padding: 0 0.4em; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.08em; color: #6b6b75; }
+
+.hint { font-size: 0.85rem; color: #6b6b75; margin: 0.5em 0; }
+.status { font-size: 0.85rem; color: var(--accent); margin: 0.4em 0 0 0; }
+
+.link {
+  background: none; border: none; padding: 0;
+  color: var(--accent); text-decoration: underline; cursor: pointer;
+  font: inherit;
+}
+
+.transport {
+  display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center;
+  margin: 1rem 0 0.5rem 0;
+}
+.transport button {
+  padding: 0.4em 1em;
+  border: 1px solid var(--rule);
+  background: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font: inherit;
+}
+.transport button:hover { background: #f0ebe1; }
+.transport .readouts { font-size: 0.95rem; }
+.transport .readouts output { color: var(--accent); font-weight: 600; }
+
+.timeline-wrap {
+  background: white;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 0.5rem;
+  margin: 0.5rem 0 1.5rem 0;
+}
+#timeline { width: 100%; height: 140px; display: block; cursor: pointer; }
+
+.debug { margin-top: 1rem; font-size: 0.9rem; }
+.debug summary { cursor: pointer; color: #6b6b75; }
+.debug table { border-collapse: collapse; margin: 0.5em 0; }
+.debug th, .debug td {
+  border: 1px solid var(--rule); padding: 2px 8px; text-align: right;
+  font-family: ui-monospace, monospace; font-size: 0.85rem;
+}
+.debug th { background: #f0ebe1; font-family: ui-serif, serif; }
