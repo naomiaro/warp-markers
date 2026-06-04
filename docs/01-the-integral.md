@@ -18,15 +18,18 @@ $\text{BPM}(b)$.
 
 ```mermaid
 flowchart LR
-  BPM("tempo\nBPM at each beat"):::obj
-  t("warp map\nwhich second is this beat?"):::obj
-  inv("inverse\nwhich beat is this second?"):::obj
+  BPM("tempo\nBPM at each beat")
+  t("warp map\nwhich second is this beat?")
+  inv("inverse\nwhich beat is this second?")
   BPM ==>|"integrate\n60 / BPM over beats"| t
   t ==>|"differentiate\nslope of t(beta) × 60"| BPM
   t ==>|"invert\nclosed-form or bisect"| inv
-  classDef obj fill:#faf7f2,stroke:#b8470b,stroke-width:1.5px,color:#2a2a30;
-  linkStyle default stroke:#6b6b75,color:#2a2a30
 ```
+
+<!-- Mermaid renders once per page and doesn't re-render when the VitePress
+     light/dark toggle is hit, so visual styling lives entirely in
+     docs/.vitepress/theme/custom.css using VitePress CSS variables. -->
+
 
 Read the round trip clockwise. **Integrate** the tempo curve to get the warp map;
 **differentiate** the warp map to recover the tempo (a DAW's live BPM readout *is*

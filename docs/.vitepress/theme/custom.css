@@ -78,3 +78,40 @@
   background: rgba(200, 55, 55, 0.08);
   color: #c83737;
 }
+
+/* ---------------------------------------------------------------------------
+   Mermaid theme bridge. Mermaid renders once per page and doesn't re-render
+   on VitePress's light/dark toggle, so we override its colors with VitePress
+   CSS variables -- which DO adapt -- and let the same SVG work in both modes.
+   --------------------------------------------------------------------------- */
+.mermaid .node rect,
+.mermaid .node polygon,
+.mermaid .node circle,
+.mermaid .node ellipse,
+.mermaid .node path {
+  fill: var(--vp-c-bg-soft) !important;
+  stroke: var(--vp-c-brand-1) !important;
+}
+.mermaid .nodeLabel,
+.mermaid .nodeLabel text,
+.mermaid .nodeLabel tspan,
+.mermaid .edgeLabel text,
+.mermaid .edgeLabel tspan,
+.mermaid .label text,
+.mermaid .label tspan {
+  fill: var(--vp-c-text-1) !important;
+  color: var(--vp-c-text-1) !important;
+}
+.mermaid .edgeLabel rect,
+.mermaid .edgeLabel .labelBkg {
+  fill: var(--vp-c-bg-soft) !important;
+}
+.mermaid .flowchart-link,
+.mermaid .edgePaths path {
+  stroke: var(--vp-c-text-3) !important;
+}
+.mermaid .marker,
+.mermaid .arrowheadPath {
+  fill: var(--vp-c-text-3) !important;
+  stroke: var(--vp-c-text-3) !important;
+}
