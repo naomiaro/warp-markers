@@ -48,7 +48,9 @@ summary.
 
 ## Try the demo
 
-<p><a href="/warp-markers/demos/06-repair/" target="_blank" rel="noopener">Open the standalone demo ↗</a></p>
+<RepairDemo />
+
+<p><a href="/warp-markers/demos/06-repair/" target="_blank" rel="noopener">Open the full-screen standalone demo ↗</a> — adds <code>.beats</code> upload and download (your file stays in your browser).</p>
 
 The default state is a 4/4 fixture with three deliberate errors so all three
 repair operations are exercisable in 30 seconds:
