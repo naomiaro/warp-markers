@@ -10,6 +10,7 @@ import {
   constantMap,
   piecewiseConstantMap,
   linearRampMap,
+  curvedMap,
 } from "@warp-math/the-math/tempo-map.js";
 
 // Total beat-axis extent for the charts. Long enough that the curves have room
@@ -40,6 +41,21 @@ export function snapshot(ui) {
   if (ui.regime === "ramp") {
     return {
       map: linearRampMap(ui.rampStart, ui.rampEnd, ui.rampLength),
+      model: null,
+    };
+  }
+  if (ui.regime === "curved") {
+    // We deliberately do NOT expose draggable warp markers on the curved
+    // map. Pinning is a piecewise-constant concern (a {beat, second} pair
+    // forces a *kink* in the map, which makes no sense on a smooth power
+    // curve). The slider for k is the only handle here; that's the decision.
+    return {
+      map: curvedMap(
+        ui.curvedStart,
+        ui.curvedEnd,
+        ui.curvedLength,
+        ui.curvedK
+      ),
       model: null,
     };
   }

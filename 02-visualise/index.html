@@ -24,6 +24,7 @@
         <label><input type="radio" name="regime" value="constant" checked /> constant</label>
         <label><input type="radio" name="regime" value="piecewise" /> piecewise-constant</label>
         <label><input type="radio" name="regime" value="ramp" /> linear ramp</label>
+        <label><input type="radio" name="regime" value="curved" /> curved (ease)</label>
       </fieldset>
 
       <fieldset id="constant-controls" class="regime-controls">
@@ -44,6 +45,19 @@
         <label>start BPM <input type="range" id="ramp-start" min="40" max="240" value="80" step="1" /> <output id="ramp-start-readout">80</output></label>
         <label>end BPM <input type="range" id="ramp-end" min="40" max="240" value="200" step="1" /> <output id="ramp-end-readout">200</output></label>
         <label>length (beats) <input type="range" id="ramp-length" min="4" max="32" value="16" step="1" /> <output id="ramp-length-readout">16</output></label>
+      </fieldset>
+
+      <fieldset id="curved-controls" class="regime-controls" hidden>
+        <legend>curved tempo (no closed form &mdash; sliced numerically)</legend>
+        <p class="hint">
+          BPM(&beta;) = b<sub>0</sub> + &Delta;&middot;(&beta;/L)<sup>k</sup>.
+          The shaded area is summed from ~500 trapezoid slices, not from a
+          formula &mdash; this is the regime that motivates numerical integration.
+        </p>
+        <label>start BPM <input type="range" id="curved-start" min="40" max="240" value="80" step="1" /> <output id="curved-start-readout">80</output></label>
+        <label>end BPM <input type="range" id="curved-end" min="40" max="240" value="200" step="1" /> <output id="curved-end-readout">200</output></label>
+        <label>length (beats) <input type="range" id="curved-length" min="4" max="32" value="12" step="1" /> <output id="curved-length-readout">12</output></label>
+        <label>easing k <input type="range" id="curved-k" min="0.25" max="4" value="2" step="0.05" /> <output id="curved-k-readout">2.00</output></label>
       </fieldset>
 
       <fieldset>

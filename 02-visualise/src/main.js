@@ -38,6 +38,10 @@ const ui = {
   rampStart: 80,
   rampEnd: 200,
   rampLength: 16,
+  curvedStart: 80,
+  curvedEnd: 200,
+  curvedLength: 12,
+  curvedK: 2,
   cursor: 6,
 };
 
@@ -53,6 +57,10 @@ const readouts = {
   rampStart: $("ramp-start-readout"),
   rampEnd: $("ramp-end-readout"),
   rampLength: $("ramp-length-readout"),
+  curvedStart: $("curved-start-readout"),
+  curvedEnd: $("curved-end-readout"),
+  curvedLength: $("curved-length-readout"),
+  curvedK: $("curved-k-readout"),
   beta: $("beta-readout"),
   tOfBeta: $("t-of-beta"),
   area: $("area-readout"),
@@ -63,6 +71,7 @@ const controlGroups = {
   constant: $("constant-controls"),
   piecewise: $("piecewise-controls"),
   ramp: $("ramp-controls"),
+  curved: $("curved-controls"),
 };
 
 // ---------------------------------------------------------------------------
@@ -191,6 +200,27 @@ $("ramp-end").addEventListener("input", (e) => {
 $("ramp-length").addEventListener("input", (e) => {
   ui.rampLength = +e.target.value;
   readouts.rampLength.value = ui.rampLength;
+  render();
+});
+
+$("curved-start").addEventListener("input", (e) => {
+  ui.curvedStart = +e.target.value;
+  readouts.curvedStart.value = ui.curvedStart;
+  render();
+});
+$("curved-end").addEventListener("input", (e) => {
+  ui.curvedEnd = +e.target.value;
+  readouts.curvedEnd.value = ui.curvedEnd;
+  render();
+});
+$("curved-length").addEventListener("input", (e) => {
+  ui.curvedLength = +e.target.value;
+  readouts.curvedLength.value = ui.curvedLength;
+  render();
+});
+$("curved-k").addEventListener("input", (e) => {
+  ui.curvedK = +e.target.value;
+  readouts.curvedK.value = ui.curvedK.toFixed(2);
   render();
 });
 
