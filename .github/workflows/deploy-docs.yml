@@ -1,0 +1,73 @@
+# Build the VitePress docs and deploy to GitHub Pages.
+#
+# The two `permissions` blocks below are the usual deploy gotcha -- without
+# `pages: write` and `id-token: write` the official actions/deploy-pages step
+# fails on the OIDC handshake. Concurrency stops two pushes racing each other
+# to the same Pages artifact.
+#
+# MANUAL STEP for the repo admin (this workflow cannot do it for you):
+#   Settings -> Pages -> Source = GitHub Actions
+# Until that is set the build still runs, but the deploy step has nothing to
+# push to.
+
+name: Deploy docs to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  # Allow ad-hoc redeploys from the Actions tab without a code change.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Cancel an in-flight deploy if a new commit lands. Pages only keeps one live
+# artifact anyway, so racing serves nothing.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      # `npm ci` installs every workspace package, including @warp-math/docs
+      # and its symlinks to @warp-math/the-math, @warp-math/meter, and
+      # @warp-math/messy-data. The docs build imports through those symlinks
+      # the same way the standalone chapter demos do.
+      - name: Install
+        run: npm ci
+
+      # Belt-and-braces: the docs build's predocs:build hook runs the
+      # extractor too, but running it explicitly here makes a failure show
+      # up as its own step in the workflow log.
+      - name: Extract derivations from chapter source
+        run: node docs/scripts/extract-derivations.mjs
+
+      - name: Build VitePress site
+        run: npm run docs:build --workspace docs
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/.vitepress/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
