@@ -8,7 +8,8 @@
   "workspaces": [
     "01-the-math",
     "02-visualise",
-    "03-real-audio"
+    "03-real-audio",
+    "04-meter"
   ],
   "scripts": {
     "test": "npm run test --workspaces --if-present",
