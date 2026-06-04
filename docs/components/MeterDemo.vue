@@ -8,10 +8,11 @@
   in identity.
 -->
 <script setup>
-import { ref, reactive, onMounted, watch, nextTick } from "vue";
+import { ref, reactive, onMounted, onBeforeUnmount, watch, nextTick } from "vue";
 import { barPositionOf } from "@warp-math/meter/meter.js";
 import { piecewiseConstantMap } from "@warp-math/the-math/tempo-map.js";
 import { pin } from "@warp-math/the-math/warp-marker.js";
+import { chartColors, onThemeChange } from "./chart-theme.mjs";
 
 const N_BEATS = 12;
 
@@ -50,6 +51,8 @@ function durationSec() {
 }
 
 // --- canvas drawing --------------------------------------------------------
+// Reads palette from chartColors() each draw so dark-mode toggle works
+// automatically -- a MutationObserver below re-calls draw() on .dark toggle.
 function draw() {
   const c = canvas.value;
   if (!c) return;
@@ -64,13 +67,14 @@ function draw() {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.clearRect(0, 0, cssW, cssH);
 
+  const C = chartColors();
   const pad = 24;
   const dur = durationSec();
   const map = tempoMap();
   const meterMap = PRESETS[ui.preset];
   const xFor = (sec) => pad + (sec / dur) * (cssW - 2 * pad);
 
-  ctx.strokeStyle = "#cdc9c1";
+  ctx.strokeStyle = C.rule;
   ctx.beginPath();
   ctx.moveTo(pad, cssH * 0.7);
   ctx.lineTo(cssW - pad, cssH * 0.7);
@@ -80,14 +84,14 @@ function draw() {
     const sec = map.beatsToSeconds(i);
     const { bar, isDownbeat } = barPositionOf(meterMap, i);
     const x = xFor(sec);
-    ctx.strokeStyle = isDownbeat ? "#2a2a30" : "#9b948a";
+    ctx.strokeStyle = isDownbeat ? C.downbeat : C.beat;
     ctx.lineWidth = isDownbeat ? 2.5 : 1;
     ctx.beginPath();
     ctx.moveTo(x, isDownbeat ? cssH * 0.15 : cssH * 0.42);
     ctx.lineTo(x, cssH * 0.7);
     ctx.stroke();
     if (isDownbeat) {
-      ctx.fillStyle = "#6b6b75";
+      ctx.fillStyle = C.axis;
       ctx.font = "11px monospace";
       ctx.fillText(`bar ${bar + 1}`, x + 3, cssH * 0.12);
     }
@@ -96,11 +100,11 @@ function draw() {
   // warp markers
   for (const m of ui.model) {
     const x = xFor(m.second);
-    ctx.fillStyle = "#b8470b";
+    ctx.fillStyle = C.accent;
     ctx.beginPath();
     ctx.arc(x, cssH * 0.7, 7, 0, Math.PI * 2);
     ctx.fill();
-    ctx.strokeStyle = "#fff";
+    ctx.strokeStyle = C.markerOutline;
     ctx.lineWidth = 2;
     ctx.stroke();
   }
@@ -154,6 +158,8 @@ function onUp(e) {
 watch(() => [ui.preset, ui.bpm, ui.model], draw, { deep: true });
 watch(() => ui.bpm, (b) => { ui.model = defaultWarpModel(b); });
 
+let cleanupTheme = null;
+
 onMounted(async () => {
   await nextTick();
   if (!canvas.value) return;
@@ -161,10 +167,13 @@ onMounted(async () => {
   canvas.value.addEventListener("pointermove", onMove);
   canvas.value.addEventListener("pointerup", onUp);
   draw();
-  // redraw on resize
+  // redraw on resize OR theme toggle
   const ro = new ResizeObserver(() => draw());
   ro.observe(canvas.value);
+  cleanupTheme = onThemeChange(() => draw());
 });
+
+onBeforeUnmount(() => cleanupTheme?.());
 </script>
 
 <template>

@@ -11,11 +11,13 @@
 import { ref, onMounted, onBeforeUnmount, nextTick } from "vue";
 import { curvedMap } from "@warp-math/the-math/tempo-map.js";
 import { Chart, registerables } from "chart.js";
+import { chartColors, applyChartDefaults, onThemeChange } from "./chart-theme.mjs";
 
 Chart.register(...registerables);
 
 const canvas = ref(null);
 let chart = null;
+let cleanupTheme = null;
 
 const N_SLICES = 8;        // few enough to see the approximation gap
 const BETA_MAX = 10;
@@ -30,7 +32,7 @@ function smoothCurve() {
   return pts;
 }
 
-function trapezoidPolygons() {
+function trapezoidPolygons(C) {
   const out = [];
   const h = BETA_MAX / N_SLICES;
   for (let i = 0; i < N_SLICES; i++) {
@@ -38,16 +40,15 @@ function trapezoidPolygons() {
     const xR = (i + 1) * h;
     out.push({
       label: `slice ${i}`,
-      // Polygon path: (xL,0) (xL, f(xL)) (xR, f(xR)) (xR, 0)
       data: [
         { x: xL, y: 0 },
         { x: xL, y: 60 / map.bpmAt(xL) },
         { x: xR, y: 60 / map.bpmAt(xR) },
         { x: xR, y: 0 },
       ],
-      borderColor: "rgba(184,71,11,0.55)",
+      borderColor: C.accent,
       borderWidth: 1,
-      backgroundColor: i % 2 ? "rgba(184,71,11,0.16)" : "rgba(184,71,11,0.28)",
+      backgroundColor: i % 2 ? C.accentSoft : C.accentStrong,
       fill: true,
       pointRadius: 0,
       showLine: true,
@@ -57,18 +58,19 @@ function trapezoidPolygons() {
   return out;
 }
 
-onMounted(async () => {
-  await nextTick();
-  if (!canvas.value) return;
+function build() {
+  if (chart) chart.destroy();
+  applyChartDefaults(Chart);
+  const C = chartColors();
   chart = new Chart(canvas.value, {
     type: "line",
     data: {
       datasets: [
-        ...trapezoidPolygons(),
+        ...trapezoidPolygons(C),
         {
           label: "60/BPM(b)",
           data: smoothCurve(),
-          borderColor: "#2a2a30",
+          borderColor: C.line,
           borderWidth: 2,
           fill: false,
           pointRadius: 0,
@@ -83,19 +85,25 @@ onMounted(async () => {
       animation: false,
       parsing: false,
       scales: {
-        x: {
-          type: "linear", min: 0, max: BETA_MAX, title: { display: true, text: "beat β" },
-        },
-        y: {
-          beginAtZero: true, title: { display: true, text: "60 / BPM(b)" },
-        },
+        x: { type: "linear", min: 0, max: BETA_MAX, title: { display: true, text: "beat β" }, grid: { color: C.grid } },
+        y: { beginAtZero: true, title: { display: true, text: "60 / BPM(b)" }, grid: { color: C.grid } },
       },
       plugins: { legend: { display: false }, tooltip: { enabled: false } },
     },
   });
+}
+
+onMounted(async () => {
+  await nextTick();
+  if (!canvas.value) return;
+  build();
+  cleanupTheme = onThemeChange(build);
 });
 
-onBeforeUnmount(() => chart?.destroy());
+onBeforeUnmount(() => {
+  chart?.destroy();
+  cleanupTheme?.();
+});
 </script>
 
 <template>

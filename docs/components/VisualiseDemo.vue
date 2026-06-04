@@ -17,6 +17,7 @@ import {
 } from "@warp-math/the-math/tempo-map.js";
 import { pin } from "@warp-math/the-math/warp-marker.js";
 import { Chart, registerables } from "chart.js";
+import { chartColors, applyChartDefaults, onThemeChange } from "./chart-theme.mjs";
 
 Chart.register(...registerables);
 
@@ -84,7 +85,7 @@ const cursorLine = {
     const { top, bottom } = chart.chartArea;
     const ctx = chart.ctx;
     ctx.save();
-    ctx.strokeStyle = "#b8470b";
+    ctx.strokeStyle = chartColors().accent;
     ctx.setLineDash([4, 4]);
     ctx.lineWidth = 1;
     ctx.beginPath();
@@ -97,6 +98,7 @@ const cursorLine = {
 
 let tempoChart = null;
 let warpChart = null;
+let cleanupTheme = null;
 
 function render() {
   if (!tempoChart || !warpChart) return;
@@ -185,20 +187,19 @@ watch(
   }
 );
 
-onMounted(async () => {
-  // ClientOnly's slot mounts one tick later than the component itself, so
-  // tempoCanvas / warpCanvas refs are null at the first onMounted. Wait one
-  // tick for the slot to flush before constructing Chart.js.
-  await nextTick();
-  if (!tempoCanvas.value || !warpCanvas.value) return;
+function buildCharts() {
+  tempoChart?.destroy();
+  warpChart?.destroy();
+  applyChartDefaults(Chart);
+  const C = chartColors();
   const baseOpts = (xMax, yLabel) => ({
     responsive: true,
     maintainAspectRatio: false,
     animation: false,
     parsing: false,
     scales: {
-      x: { type: "linear", min: 0, max: xMax, title: { display: true, text: "beat β" } },
-      y: { beginAtZero: true, title: { display: true, text: yLabel } },
+      x: { type: "linear", min: 0, max: xMax, title: { display: true, text: "beat β" }, grid: { color: C.grid } },
+      y: { beginAtZero: true, title: { display: true, text: yLabel }, grid: { color: C.grid } },
     },
     plugins: { legend: { display: false }, tooltip: { enabled: false } },
   });
@@ -206,8 +207,8 @@ onMounted(async () => {
     type: "line",
     data: {
       datasets: [
-        { label: "area", data: [], borderWidth: 0, backgroundColor: "rgba(184,71,11,0.18)", fill: "origin", pointRadius: 0 },
-        { label: "60/BPM", data: [], borderColor: "#2a2a30", borderWidth: 1.5, fill: false, pointRadius: 0 },
+        { label: "area", data: [], borderWidth: 0, backgroundColor: C.accentSoft, fill: "origin", pointRadius: 0 },
+        { label: "60/BPM", data: [], borderColor: C.line, borderWidth: 1.5, fill: false, pointRadius: 0 },
       ],
     },
     options: baseOpts(BETA_MAX, "60 / BPM(b)  (s per beat)"),
@@ -217,22 +218,33 @@ onMounted(async () => {
     type: "line",
     data: {
       datasets: [
-        { label: "t(β)", data: [], borderColor: "#2a2a30", borderWidth: 1.5, fill: false, pointRadius: 0 },
-        { label: "markers", data: [], borderColor: "#b8470b", backgroundColor: "#b8470b", showLine: false, pointRadius: 7, pointBorderColor: "#fff", pointBorderWidth: 2 },
+        { label: "t(β)", data: [], borderColor: C.line, borderWidth: 1.5, fill: false, pointRadius: 0 },
+        { label: "markers", data: [], borderColor: C.accent, backgroundColor: C.accent, showLine: false, pointRadius: 7, pointBorderColor: C.markerOutline, pointBorderWidth: 2 },
       ],
     },
     options: baseOpts(BETA_MAX, "t  (seconds)"),
     plugins: [cursorLine],
   });
+  render();
+}
+
+onMounted(async () => {
+  // ClientOnly's slot mounts one tick later than the component itself, so
+  // tempoCanvas / warpCanvas refs are null at the first onMounted. Wait one
+  // tick for the slot to flush before constructing Chart.js.
+  await nextTick();
+  if (!tempoCanvas.value || !warpCanvas.value) return;
+  buildCharts();
   warpCanvas.value.addEventListener("pointerdown", onPointerDown);
   warpCanvas.value.addEventListener("pointermove", onPointerMove);
   warpCanvas.value.addEventListener("pointerup", onPointerUp);
-  render();
+  cleanupTheme = onThemeChange(buildCharts);
 });
 
 onBeforeUnmount(() => {
   tempoChart?.destroy();
   warpChart?.destroy();
+  cleanupTheme?.();
 });
 </script>
 

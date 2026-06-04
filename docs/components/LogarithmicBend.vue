@@ -9,6 +9,7 @@
 import { ref, onMounted, onBeforeUnmount, nextTick } from "vue";
 import { linearRampMap } from "@warp-math/the-math/tempo-map.js";
 import { Chart, registerables } from "chart.js";
+import { chartColors, applyChartDefaults, onThemeChange } from "./chart-theme.mjs";
 
 Chart.register(...registerables);
 
@@ -16,6 +17,7 @@ const left = ref(null);
 const right = ref(null);
 let leftChart = null;
 let rightChart = null;
+let cleanupTheme = null;
 
 const LENGTH = 16;
 const map = linearRampMap(80, 200, LENGTH);
@@ -37,48 +39,58 @@ function sampleWarp() {
   return out;
 }
 
-const baseOpts = (xMax, yLabel) => ({
+const baseOpts = (xMax, yLabel, C) => ({
   responsive: true,
   maintainAspectRatio: false,
   animation: false,
   parsing: false,
   scales: {
-    x: { type: "linear", min: 0, max: xMax, title: { display: true, text: "beat β" } },
-    y: { beginAtZero: true, title: { display: true, text: yLabel } },
+    x: { type: "linear", min: 0, max: xMax, title: { display: true, text: "beat β" }, grid: { color: C.grid } },
+    y: { beginAtZero: true, title: { display: true, text: yLabel }, grid: { color: C.grid } },
   },
   plugins: { legend: { display: false }, tooltip: { enabled: false } },
 });
 
-onMounted(async () => {
-  await nextTick();
-  if (!left.value || !right.value) return;
+function build() {
+  leftChart?.destroy();
+  rightChart?.destroy();
+  applyChartDefaults(Chart);
+  const C = chartColors();
   leftChart = new Chart(left.value, {
     type: "line",
     data: {
       datasets: [{
         label: "BPM(β)", data: sampleBpm(),
-        borderColor: "#2a2a30", borderWidth: 2, fill: false,
+        borderColor: C.line, borderWidth: 2, fill: false,
         pointRadius: 0, tension: 0,
       }],
     },
-    options: baseOpts(LENGTH, "BPM"),
+    options: baseOpts(LENGTH, "BPM", C),
   });
   rightChart = new Chart(right.value, {
     type: "line",
     data: {
       datasets: [{
         label: "t(β)", data: sampleWarp(),
-        borderColor: "#b8470b", borderWidth: 2, fill: false,
+        borderColor: C.accent, borderWidth: 2, fill: false,
         pointRadius: 0, tension: 0,
       }],
     },
-    options: baseOpts(LENGTH, "t (seconds)"),
+    options: baseOpts(LENGTH, "t (seconds)", C),
   });
+}
+
+onMounted(async () => {
+  await nextTick();
+  if (!left.value || !right.value) return;
+  build();
+  cleanupTheme = onThemeChange(build);
 });
 
 onBeforeUnmount(() => {
   leftChart?.destroy();
   rightChart?.destroy();
+  cleanupTheme?.();
 });
 </script>
 

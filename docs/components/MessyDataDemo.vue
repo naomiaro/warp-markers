@@ -13,6 +13,7 @@ import {
   monotonicityHoles,
 } from "@warp-math/messy-data/robust.js";
 import { Chart, registerables } from "chart.js";
+import { chartColors, applyChartDefaults, onThemeChange } from "./chart-theme.mjs";
 
 Chart.register(...registerables);
 
@@ -78,16 +79,19 @@ const result = computed(() => {
 });
 
 let chart = null;
+let cleanupTheme = null;
+
 function update() {
   if (!chart) return;
   const { bpms, flags } = result.value;
+  const C = chartColors();
   const flagged = new Set(flags.map((f) => f.index));
   const data = [];
   const colors = [];
   for (let i = 0; i < bpms.length; i++) {
     if (!Number.isFinite(bpms[i])) continue;
     data.push({ x: i, y: bpms[i] });
-    colors.push(flagged.has(i) ? "#c83737" : "#4a7c4a");
+    colors.push(flagged.has(i) ? C.flag : C.ok);
   }
   chart.data.datasets[0].data = data;
   chart.data.datasets[0].pointBackgroundColor = colors;
@@ -95,21 +99,22 @@ function update() {
 }
 watch(result, update);
 
-onMounted(async () => {
-  await nextTick();
-  if (!canvas.value) return;
+function buildChart() {
+  chart?.destroy();
+  applyChartDefaults(Chart);
+  const C = chartColors();
   chart = new Chart(canvas.value, {
     type: "line",
     data: {
       datasets: [{
         label: "segment BPM",
         data: [],
-        borderColor: "#2a2a30",
+        borderColor: C.line,
         borderWidth: 1.5,
         fill: false,
         pointRadius: 5,
         pointBackgroundColor: [],
-        pointBorderColor: "#fff",
+        pointBorderColor: C.markerOutline,
         pointBorderWidth: 1,
         tension: 0,
       }],
@@ -120,15 +125,26 @@ onMounted(async () => {
       animation: false,
       parsing: false,
       scales: {
-        x: { type: "linear", title: { display: true, text: "segment index" } },
-        y: { title: { display: true, text: "BPM" } },
+        x: { type: "linear", title: { display: true, text: "segment index" }, grid: { color: C.grid } },
+        y: { title: { display: true, text: "BPM" }, grid: { color: C.grid } },
       },
       plugins: { legend: { display: false }, tooltip: { enabled: true } },
     },
   });
   update();
+}
+
+onMounted(async () => {
+  await nextTick();
+  if (!canvas.value) return;
+  buildChart();
+  cleanupTheme = onThemeChange(buildChart);
 });
-onBeforeUnmount(() => chart?.destroy());
+
+onBeforeUnmount(() => {
+  chart?.destroy();
+  cleanupTheme?.();
+});
 </script>
 
 <template>

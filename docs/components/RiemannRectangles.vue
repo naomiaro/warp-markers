@@ -12,11 +12,13 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount, nextTick } from "vue";
 import { Chart, registerables } from "chart.js";
+import { chartColors, applyChartDefaults, onThemeChange } from "./chart-theme.mjs";
 
 Chart.register(...registerables);
 
 const canvas = ref(null);
 let chart = null;
+let cleanupTheme = null;
 
 // Three segments of different BPMs over six beats. Picked for visual
 // distinctness, not realism: 120 / 90 / 150 BPM. The seconds-per-beat
@@ -42,14 +44,11 @@ function buildStepData() {
   return out;
 }
 
-onMounted(async () => {
-  await nextTick();
-  if (!canvas.value) return;
-
-  // A separate dataset per rectangle so each can be filled with a slightly
-  // different shade -- making it visually obvious that the area is a SUM
-  // of distinct rectangle areas.
-  const SHADES = ["rgba(184,71,11,0.18)", "rgba(184,71,11,0.32)", "rgba(184,71,11,0.18)"];
+function build() {
+  if (chart) chart.destroy();
+  applyChartDefaults(Chart);
+  const C = chartColors();
+  const SHADES = [C.accentSoft, C.accentStrong, C.accentSoft];
   const rectDatasets = SEGMENTS.map((seg, i) => {
     let b = 0;
     for (let k = 0; k < i; k++) b += SEGMENTS[k].beats;
@@ -62,7 +61,7 @@ onMounted(async () => {
         { x: b + seg.beats, y },
         { x: b + seg.beats, y: 0 },
       ],
-      borderColor: "rgba(184,71,11,0.6)",
+      borderColor: C.accent,
       borderWidth: 1,
       backgroundColor: SHADES[i],
       fill: true,
@@ -71,7 +70,6 @@ onMounted(async () => {
       tension: 0,
     };
   });
-
   chart = new Chart(canvas.value, {
     type: "line",
     data: {
@@ -80,7 +78,7 @@ onMounted(async () => {
         {
           label: "60/BPM(b)",
           data: buildStepData(),
-          borderColor: "#2a2a30",
+          borderColor: C.line,
           borderWidth: 2,
           fill: false,
           pointRadius: 0,
@@ -96,20 +94,25 @@ onMounted(async () => {
       animation: false,
       parsing: false,
       scales: {
-        x: {
-          type: "linear", min: 0, max: 6, title: { display: true, text: "beat β" },
-          ticks: { stepSize: 1 },
-        },
-        y: {
-          beginAtZero: true, title: { display: true, text: "60 / BPM(b)  (s per beat)" },
-        },
+        x: { type: "linear", min: 0, max: 6, title: { display: true, text: "beat β" }, ticks: { stepSize: 1 }, grid: { color: C.grid } },
+        y: { beginAtZero: true, title: { display: true, text: "60 / BPM(b)  (s per beat)" }, grid: { color: C.grid } },
       },
       plugins: { legend: { display: false }, tooltip: { enabled: false } },
     },
   });
+}
+
+onMounted(async () => {
+  await nextTick();
+  if (!canvas.value) return;
+  build();
+  cleanupTheme = onThemeChange(build);
 });
 
-onBeforeUnmount(() => chart?.destroy());
+onBeforeUnmount(() => {
+  chart?.destroy();
+  cleanupTheme?.();
+});
 </script>
 
 <template>
