@@ -79,6 +79,7 @@ time running backwards, and the code rejects it.
 01-the-math/      pure functions, no audio, fully unit-tested. Read this first.
 02-visualise/     the integral made visible: tempo curve + draggable warp map.
 03-real-audio/    parse a beat_this .beats file and play it back through the map.
+04-meter/         the second layer: bar arithmetic. No calculus, just modulo.
 ```
 
 ### 01-the-math
@@ -106,6 +107,48 @@ The production path. Parses beat_this `.beats` output, builds the tempo model wi
 This is also where the real-world wrinkle lives that the teaching layer skips: real
 beat maps don't start at beat 0 / second 0, so a pickup-beat offset is needed to
 align the first downbeat to a bar boundary.
+
+### 04-meter
+A second layer on the same beat axis. Tempo decides *when* a beat happens — that is
+the integral. **Meter** decides *what* a beat is called — which beat is a downbeat,
+which is interior — and the entire computation is integer division and modulo:
+
+```
+positionInBar = (beatIndex - segmentStart) % beatsPerBar
+bar           = barsBefore + floor((beatIndex - segmentStart) / beatsPerBar)
+```
+
+The interactive demo proves the independence in two ways: a 4/4 → 3/4 preset moves
+the accent click to a new beat pattern *while the tempo holds steady*, and a draggable
+warp marker shifts every downbeat's second-time without changing which beats are
+downbeats. Two edits, two layers, one timeline.
+
+## Meter is not tempo
+
+It's tempting to bundle meter into the tempo map ("a 4/4 piece is a tempo map plus
+some bar info") but this conflates two very different things:
+
+- **Tempo** is the integral `t(β) = ∫₀^β 60/BPM(b) db`. Tempo varies *continuously*
+  with audio time, so this is where the calculus lives — three closed-form regimes
+  plus one numerical regime, all in `01-the-math`.
+- **Meter** is bar arithmetic on the beat axis. A quarter note at 120 BPM lasts 0.5 s
+  in 3/4, 4/4, or 7/8 — the meter never changes how long a beat *takes*. What it
+  decides is how beats *group*, which is one `% beatsPerBar` per beat. That is the
+  whole layer.
+
+The two layers also receive different signals from beat detection. beat_this returns
+two parallel lists — *beats* and *downbeats* — and never emits a declared time
+signature; the meter is recovered from the *spacing* between downbeats, so a piece
+that goes 4/4 → 3/4 shows up as downbeat gaps switching from 4 to 3 with no separate
+"time signature changed" event. The "beats per bar" we use here is whatever pulse
+beat_this is tracking; finer distinctions like simple vs compound feel (6/8 felt as
+two pulses versus six) are a labeling convention on top, not built into the
+arithmetic.
+
+A warp edit (dragging a marker) is purely a tempo-layer operation: it slides the
+audio time of a downbeat earlier or later. It never changes *which* beat is the
+downbeat — that question belongs to the meter layer, which the warp marker doesn't
+touch.
 
 ## Why calculus, restated
 
