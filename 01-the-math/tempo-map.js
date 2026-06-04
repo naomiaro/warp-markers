@@ -31,6 +31,29 @@
 // ===========================================================================
 
 
+// ===========================================================================
+// THE ROUND TRIP: BPM IS THE DERIVATIVE OF t(beta)
+//
+// We opened with dbeta/dt = BPM / 60 -- tempo is the RATE of beats with
+// respect to audio time. Everything below INTEGRATES that rate to recover
+// t(beta), three closed-form regimes followed by a numerical one. The piece
+// that closes the loop, and that every DAW relies on without saying so out
+// loud, is the other direction: a live BPM readout is the DERIVATIVE coming
+// back around.
+//
+//        BPM(beta) = 60 * d(beta)/dt
+//                  = 60 / (dt/d(beta))           (reciprocal of the slope)
+//
+// Each map's `bpmAt(beta)` IS that derivative, evaluated analytically where
+// a formula exists for it: a constant (regime 1), a piecewise constant
+// (regime 2), the line b0 + s*beta (regime 3), the power curve
+// b0 + Delta*(beta/L)^k (regime 4). The test suite estimates dt/d(beta)
+// numerically from `beatsToSeconds` at small h and confirms 60/(dt/dbeta)
+// agrees with bpmAt for every regime -- the explicit proof that the
+// integral and the derivative are two views of the same object.
+// ===========================================================================
+
+
 // ---------------------------------------------------------------------------
 // Helper: the tempo implied by the segment between two adjacent markers.
 //

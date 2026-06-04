@@ -150,6 +150,61 @@ describe("curved tempo (numerical integration)", () => {
   });
 });
 
+describe("BPM is the derivative -- the round trip", () => {
+  // Numerical derivative of beatsToSeconds:
+  //     dt/dbeta ~= (beatsToSeconds(beta + h) - beatsToSeconds(beta)) / h
+  // Then the live tempo is BPM = 60 / (dt/dbeta).
+  // For the closed-form regimes a tiny h is enough; for the curved (numerical)
+  // regime beatsToSeconds is itself a trapezoidal sum, so the derivative
+  // inherits quadrature error and needs a looser tolerance.
+  const numericalBpm = (map, beta, h = 1e-4) => {
+    const dt = map.beatsToSeconds(beta + h) - map.beatsToSeconds(beta);
+    return 60 * h / dt;
+  };
+
+  it("constant: numerical d/dt of t(beta) reproduces bpmAt", () => {
+    // 140 BPM is constant, so the derivative is just 140 everywhere.
+    const map = constantMap(140);
+    for (const b of [0.5, 3, 7]) {
+      expect(close(numericalBpm(map, b), map.bpmAt(b), 1e-3)).toBe(true);
+    }
+  });
+
+  it("piecewise-constant: derivative inside a segment is the segment BPM", () => {
+    // Inside a segment the warp map is linear, so the derivative is exactly
+    // the segment slope -- which is exactly what bpmAt returns. We sample
+    // safely away from the kink at beat 4 to avoid the discontinuity.
+    const markers = [
+      { beat: 0, second: 0 },
+      { beat: 4, second: 2 }, // 120 BPM
+      { beat: 8, second: 6 }, // 60 BPM
+    ];
+    const map = piecewiseConstantMap(markers);
+    expect(close(numericalBpm(map, 2), map.bpmAt(2), 1e-3)).toBe(true);
+    expect(close(numericalBpm(map, 6), map.bpmAt(6), 1e-3)).toBe(true);
+  });
+
+  it("linear ramp: derivative agrees with the analytic bpmAt", () => {
+    // bpmAt is the line b0 + s*beta; the derivative of beatsToSeconds (which
+    // is the closed-form logarithm) recovers exactly that line.
+    const map = linearRampMap(120, 240, 8);
+    for (const b of [0.5, 3, 7]) {
+      expect(close(numericalBpm(map, b), map.bpmAt(b), 1e-3)).toBe(true);
+    }
+  });
+
+  it("curved: derivative agrees with bpmAt (looser tolerance, numerical both ways)", () => {
+    // beatsToSeconds is a trapezoidal sum, so the numerical derivative is a
+    // finite difference of an approximation. ~0.5 BPM tolerance is plenty
+    // for a teaching check; tighten it by increasing the trap sample count
+    // in curvedMap if you ever need more.
+    const map = curvedMap(80, 200, 12, 2);
+    for (const b of [1, 5, 10]) {
+      expect(Math.abs(numericalBpm(map, b) - map.bpmAt(b))).toBeLessThan(0.5);
+    }
+  });
+});
+
 describe("pinning", () => {
   const base = [
     { beat: 0, second: 0 },
