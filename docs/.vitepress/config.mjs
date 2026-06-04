@@ -58,6 +58,14 @@ export default withMermaid(defineConfig({
   // ever included via <!--@include--> directives from the chapter pages.
   srcExclude: [".generated/**"],
 
+  // The standalone chapter demos live at /warp-markers/demos/<chapter>/,
+  // served as plain HTML from docs/public/demos/. In the chapter pages
+  // we link to them with raw HTML <a target="_blank">, so VitePress's
+  // SPA router (which would 404 on routes it doesn't know about) is
+  // bypassed -- the link opens in a new tab as a full page load. The
+  // dead-link check also has to be told the path is intentional.
+  ignoreDeadLinks: [/^\/warp-markers\/demos\//],
+
   // Mermaid theming. `htmlLabels: false` makes labels render as SVG <text>
   // (instead of HTML <foreignObject>), so they scale uniformly with the
   // diagram when the page narrows -- HTML labels keep their pixel size

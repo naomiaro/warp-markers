@@ -63,12 +63,13 @@ from. For a piecewise-constant model built from beat_this output, every residual
 is zero to numerical noise — the model has nothing to lose between input and output
 because the integral is exact on each step.
 
-## Try it locally
+## Try the demo
+
+<p><a href="/warp-markers/demos/03-real-audio/" target="_blank" rel="noopener">Open the standalone demo ↗</a> — runs in your browser, no checkout needed. Click the "use the bundled sample" button to load the synthetic 14-beat fixture, or drop in your own audio and <code>.beats</code> files.</p>
+
+Or run locally to fork and modify:
 
 ```bash
 cd 03-real-audio
 npm run dev
 ```
-
-The standalone demo expects you to drop in your own audio + `.beats` files (or use
-the bundled synthetic sample to verify the grid without audio).

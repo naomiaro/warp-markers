@@ -50,7 +50,11 @@ $("use-sample-beats").addEventListener("click", async () => {
   // The sample file is bundled at /samples/example.beats. Vite serves it
   // out of the project root via its public-folder-ish behaviour; here we
   // just fetch it.
-  const res = await fetch("/samples/example.beats");
+  // `import.meta.env.BASE_URL` resolves to whatever `base` is configured in
+  // vite.config.js -- `/` in dev, `./` after a relative-base production build.
+  // This keeps the fetch path correct whether served at the dev-server root or
+  // mounted at /warp-markers/03-real-audio/ inside the docs Pages artifact.
+  const res = await fetch(`${import.meta.env.BASE_URL}samples/example.beats`);
   const text = await res.text();
   await loadBeatsFromText(text, "example.beats");
 });

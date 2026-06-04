@@ -15,6 +15,8 @@ quadrature).
 
 <VisualiseDemo />
 
+<p><a href="/warp-markers/demos/02-visualise/" target="_blank" rel="noopener">Open the full-screen standalone demo ↗</a></p>
+
 ## What to notice
 
 - In **constant** mode the left chart is a flat line; the shaded rectangle is

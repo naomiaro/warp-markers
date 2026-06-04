@@ -1,6 +1,10 @@
 import { defineConfig } from "vite";
 
 export default defineConfig({
+  // Relative base so the built bundle works at any URL prefix -- the chapter
+  // ships both as a standalone dev app AND as a static drop into the docs
+  // site at /warp-markers/04-meter/.
+  base: "./",
   server: { open: true },
   resolve: { preserveSymlinks: false },
 });

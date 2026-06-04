@@ -6,7 +6,7 @@
   "description": "VitePress site for the warp-math chapters. Demos here import the chapter math directly, never a copy.",
   "scripts": {
     "predocs:dev": "node scripts/extract-derivations.mjs",
-    "predocs:build": "node scripts/extract-derivations.mjs",
+    "predocs:build": "node scripts/extract-derivations.mjs && node scripts/build-chapter-demos.mjs",
     "docs:dev": "vitepress dev .",
     "docs:build": "vitepress build .",
     "docs:preview": "vitepress preview ."

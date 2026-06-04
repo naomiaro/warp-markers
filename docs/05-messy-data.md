@@ -40,6 +40,8 @@ halved). The flagged segments turn red; the rest stay green.
 
 <MessyDataDemo />
 
+<p><a href="/warp-markers/demos/05-messy-data/" target="_blank" rel="noopener">Open the full-screen standalone demo ↗</a> — has threshold inputs and a wider chart.</p>
+
 Click *non-monotonic* and watch the red banner appear above the table: that is the
 detector telling you the warp map's seconds axis went backwards, so `secondsToBeats`
 has no single answer at that $t$. The standalone demo and this one share the same

@@ -32,6 +32,8 @@ That single classification IS the entire meter layer at work.
 
 <MeterDemo />
 
+<p><a href="/warp-markers/demos/04-meter/" target="_blank" rel="noopener">Open the full-screen standalone demo ↗</a></p>
+
 Try this:
 
 1. Pick the **4/4 → 3/4 at bar 3** preset. The tempo holds steady; the accent

@@ -2,3 +2,7 @@
 node_modules/
 .vitepress/dist/
 .vitepress/cache/
+
+# Standalone chapter demo builds, dropped here by
+# docs/scripts/build-chapter-demos.mjs before each `vitepress build`.
+public/demos/

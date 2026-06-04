@@ -33,6 +33,8 @@ docs              @warp-math/docs           VitePress + KaTeX math + Vue demos t
 - `base: '/warp-markers/'` in `.vitepress/config.mjs` is required for GitHub project Pages — wrong base = broken CSS/JS.
 - `markdown: { math: true }` needs `markdown-it-mathjax3` (already in devDeps); KaTeX-style `$...$` and `$$...$$` syntax.
 - Mermaid diagrams need `vitepress-plugin-mermaid` + `mermaid` devDeps; wrap `defineConfig` with `withMermaid(...)`. After Mermaid lands the JS bundle exceeds 500 kB — VitePress warns, expected.
+- **Standalone chapter demos are hosted at `/warp-markers/demos/<chapter>/`.** `docs/scripts/build-chapter-demos.mjs` runs each chapter's `npm run build` (each has `base: "./"` so the bundle works at any URL prefix) and copies the result into `docs/public/demos/<chapter>/`; VitePress includes it in the final Pages artifact. The `/demos/` prefix avoids a route collision with the chapter `.md` pages at `/warp-markers/<chapter>/`. Pages link to them via raw `<a target="_blank">` (not Markdown links) so VitePress's SPA router doesn't intercept and 404. `ignoreDeadLinks` whitelists `/warp-markers/demos/`.
+- **VitePress link-writing convention:** in Markdown, internal links are written WITHOUT the `base` prefix (VitePress prepends it automatically). Raw HTML `<a href>` must include the full `base + path` (no auto-prepend on HTML). Picking the wrong one produces either `/warp-markers/warp-markers/...` (double-base in Markdown) or a missing-base 404 (in HTML).
 - Deploy: `.github/workflows/deploy-docs.yml` on push to `main`. Manual one-time: Settings → Pages → Source = GitHub Actions.
 
 ## Common gotchas
