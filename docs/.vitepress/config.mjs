@@ -58,8 +58,14 @@ export default withMermaid(defineConfig({
   // ever included via <!--@include--> directives from the chapter pages.
   srcExclude: [".generated/**"],
 
-  // Mermaid theming so diagrams match the VitePress default theme.
+  // Mermaid theming. `htmlLabels: false` makes labels render as SVG <text>
+  // (instead of HTML <foreignObject>), so they scale uniformly with the
+  // diagram when the page narrows -- HTML labels keep their pixel size
+  // while the SVG viewBox shrinks, causing right-edge clipping in the
+  // grey arrow-label boxes. Use "\n" in labels for line breaks; HTML tags
+  // (<br/>, <i>) won't render with this setting.
   mermaid: {
     theme: "default",
+    flowchart: { htmlLabels: false, useMaxWidth: true },
   },
 }));

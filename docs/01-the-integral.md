@@ -18,13 +18,13 @@ $\text{BPM}(b)$.
 
 ```mermaid
 flowchart LR
-  BPM("<b>tempo</b><br/>BPM at each beat"):::obj
-  t("<b>warp map</b><br/>which second is this beat?"):::obj
-  inv("<b>inverse</b><br/>which beat is this second?"):::obj
-  BPM ==>|"integrate<br/><i>(60 / BPM) over beats</i>"| t
-  t ==>|"differentiate<br/><i>slope of t(beta) × 60</i>"| BPM
-  t ==>|"invert<br/><i>closed-form or bisect</i>"| inv
-  classDef obj fill:#faf7f2,stroke:#b8470b,stroke-width:1.5px,color:#2a2a30,font-weight:500;
+  BPM("tempo\nBPM at each beat"):::obj
+  t("warp map\nwhich second is this beat?"):::obj
+  inv("inverse\nwhich beat is this second?"):::obj
+  BPM ==>|"integrate\n60 / BPM over beats"| t
+  t ==>|"differentiate\nslope of t(beta) × 60"| BPM
+  t ==>|"invert\nclosed-form or bisect"| inv
+  classDef obj fill:#faf7f2,stroke:#b8470b,stroke-width:1.5px,color:#2a2a30;
   linkStyle default stroke:#6b6b75,color:#2a2a30
 ```
 
