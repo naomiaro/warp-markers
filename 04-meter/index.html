@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>warp-math · meter is not tempo</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>warp-math · meter is not tempo</h1>
+      <p class="lede">
+        Two layers sharing one timeline. <strong>Tempo</strong> (the integral
+        you already met) decides <em>when</em> a beat happens, in seconds.
+        <strong>Meter</strong> decides <em>what</em> a beat is called &mdash;
+        which beat is a downbeat, which is interior &mdash; using only integer
+        division and modulo. The metronome below makes that visible
+        <em>and</em> audible: the
+        <span class="accent-swatch">accent click on downbeats</span> is the
+        meter layer in one tone. Drag the warp marker and notice that beats
+        move in time but the accent pattern doesn't budge.
+      </p>
+    </header>
+
+    <section class="controls">
+      <fieldset>
+        <legend>meter</legend>
+        <label><input type="radio" name="meter" value="4-4" checked /> 4/4 steady</label>
+        <label><input type="radio" name="meter" value="3-4" /> 3/4 steady</label>
+        <label><input type="radio" name="meter" value="switch" /> 4/4 &rarr; 3/4 at bar 3</label>
+        <p class="hint">
+          The list of <code>{fromBeat, beatsPerBar}</code> segments is the
+          whole meter layer &mdash; everything below reads downbeats from it.
+        </p>
+      </fieldset>
+
+      <fieldset>
+        <legend>tempo (constant, BPM)</legend>
+        <label>
+          BPM <input type="range" id="bpm" min="60" max="200" value="120" step="1" />
+          <output id="bpm-readout">120</output>
+        </label>
+        <p class="hint">
+          We use a single steady tempo so the meter change is unambiguously
+          audible: <em>tempo is what it is, only the accent moves</em>. The
+          warp marker drag below introduces a deliberate tempo distortion
+          on top, to show the layers remain independent.
+        </p>
+      </fieldset>
+
+      <fieldset>
+        <legend>transport</legend>
+        <button type="button" id="play-pause">play</button>
+        <button type="button" id="rewind">rewind</button>
+        <p class="readouts">
+          beats: <output id="ro-nbeats">—</output> ·
+          downbeats: <output id="ro-ndown">—</output> ·
+          β at playhead: <output id="ro-beta">—</output> ·
+          bar/pos: <output id="ro-bar">—</output>
+        </p>
+      </fieldset>
+    </section>
+
+    <section class="timeline-wrap">
+      <canvas id="timeline"></canvas>
+      <p class="hint">
+        Tall stroke = downbeat (per <code>barPositionOf(meterMap, i).isDownbeat</code>).
+        Orange dot = draggable warp marker (drag it left or right to re-pin a beat
+        in seconds via <code>pin()</code>). Pinned, the second-time of every
+        downbeat after the marker shifts &mdash; but the
+        <em>identity</em> of those downbeats does not.
+      </p>
+    </section>
+
+    <section class="proof">
+      <h2>The two layers in numbers</h2>
+      <p>
+        For each downbeat in the sequence, the table below shows the
+        <strong>meter</strong> facts (bar number, position-in-bar, from
+        <code>barPositionOf</code>) alongside the <strong>tempo</strong> facts
+        (beat index, second-time, from <code>beatsToSeconds</code>). Drag the
+        warp marker and watch the <em>second-time</em> column move while the
+        <em>bar / position</em> columns stay still &mdash; the demonstration of
+        independence.
+      </p>
+      <table id="proof-table">
+        <thead>
+          <tr>
+            <th>beat i</th>
+            <th>bar (meter)</th>
+            <th>position-in-bar (meter)</th>
+            <th>second (tempo)</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
