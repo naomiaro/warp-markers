@@ -18,17 +18,21 @@ $\text{BPM}(b)$.
 
 ```mermaid
 flowchart LR
-  BPM["BPM(β)<br/>tempo curve"] -->|"∫ 60/BPM(b) db"| t["t(β)<br/>warp map"]
-  t -->|"d/dβ · 60"| BPM
-  t -->|"invert (bisect if no formula)"| sToB["β(t)<br/>seconds → beats"]
-  classDef obj fill:#faf7f2,stroke:#b8470b,stroke-width:1.5px,color:#2a2a30;
-  class BPM,t,sToB obj;
+  BPM("<b>tempo</b><br/>BPM at each beat"):::obj
+  t("<b>warp map</b><br/>which second is this beat?"):::obj
+  inv("<b>inverse</b><br/>which beat is this second?"):::obj
+  BPM ==>|"integrate<br/><i>(60 / BPM) over beats</i>"| t
+  t ==>|"differentiate<br/><i>slope of t(beta) × 60</i>"| BPM
+  t ==>|"invert<br/><i>closed-form or bisect</i>"| inv
+  classDef obj fill:#faf7f2,stroke:#b8470b,stroke-width:1.5px,color:#2a2a30,font-weight:500;
+  linkStyle default stroke:#6b6b75,color:#2a2a30
 ```
 
-Read the round trip clockwise. Integrate tempo to get a warp map; differentiate the
-warp map to recover tempo; invert the warp map to go from a second back to a beat.
-Each chapter formalises one piece of this loop for a different shape of
-$\text{BPM}(b)$.
+Read the round trip clockwise. **Integrate** the tempo curve to get the warp map;
+**differentiate** the warp map to recover the tempo (a DAW's live BPM readout *is*
+this derivative); **invert** the warp map to go from an audio second back to a beat
+— closed-form where the regime has one, by bisection where it doesn't. Each chapter
+formalises one piece of this loop for a different shape of $\text{BPM}(b)$.
 
 <!--@include: ./.generated/one-idea.md-->
 
