@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>warp-math · hand-repair a beat map</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>warp-math · hand-repair a beat map</h1>
+      <p class="lede">
+        Chapter 05 <em>saw</em> the problems and stopped there. This is the
+        other half: you <em>fix</em> a mostly-correct map by hand. The two
+        layers built separately finally operate together &mdash; an
+        accidental extra beat in a 4/4 bar is invisible in pure tempo terms,
+        only the meter overlay flags it. Bars with the right beat count glow
+        green; bars with the wrong count are flagged with the actual count.
+        Drag a marker to move it, click a marker to select then press
+        <kbd>delete</kbd> to remove it, click empty grid space to insert a
+        beat.
+      </p>
+    </header>
+
+    <section class="controls">
+      <fieldset>
+        <legend>1. load a beat map</legend>
+        <button type="button" id="reset-default">reset to default (broken)</button>
+        <label class="file">
+          upload .beats file
+          <input type="file" id="beats-input" accept=".beats,.txt" />
+        </label>
+        <p id="upload-status" class="hint"></p>
+        <p class="hint">
+          Your file stays in your browser. Parsing is entirely client-side;
+          nothing is uploaded.
+        </p>
+      </fieldset>
+
+      <fieldset>
+        <legend>2. target meter</legend>
+        <label>beats per bar
+          <input type="number" id="expected-bpb" min="2" max="12" value="4" />
+        </label>
+        <p class="hint">
+          The validator checks each bar against this count. Pickup and
+          trailing partial bars are exempt &mdash; by definition they aren't
+          full bars.
+        </p>
+      </fieldset>
+
+      <fieldset>
+        <legend>3. summary</legend>
+        <p class="readouts">
+          beats: <output id="ro-beats">&mdash;</output> ·
+          downbeats: <output id="ro-downs">&mdash;</output> ·
+          bars correct: <output id="ro-correct">&mdash;</output> /
+          <output id="ro-total">&mdash;</output>
+        </p>
+        <p id="ro-done" class="done" hidden>all bars correct ✓</p>
+      </fieldset>
+    </section>
+
+    <section class="timeline-wrap">
+      <canvas id="timeline"></canvas>
+      <p id="inline-error" class="error" hidden></p>
+      <p class="hint">
+        <span class="legend-swatch ok"></span> bar with the expected beat count &nbsp;
+        <span class="legend-swatch bad"></span> bar with the wrong beat count &nbsp;
+        <span class="legend-swatch pickup"></span> pickup / trailing partial &nbsp;
+        <span class="legend-swatch dot"></span> beat (orange = selected)
+      </p>
+    </section>
+
+    <section class="export">
+      <button type="button" id="download-beats">download corrected .beats</button>
+      <p class="hint">
+        The download is exactly the format beat_this produces, so it's a
+        drop-in replacement for the file you uploaded.
+      </p>
+    </section>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

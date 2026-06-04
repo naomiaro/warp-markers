@@ -1,0 +1,122 @@
+:root {
+  --bg: #faf7f2;
+  --ink: #2a2a30;
+  --accent: #b8470b;
+  --ok: #4a7c4a;
+  --ok-soft: rgba(74, 124, 74, 0.22);
+  --bad: #c83737;
+  --bad-soft: rgba(200, 55, 55, 0.22);
+  --pickup-soft: rgba(120, 120, 130, 0.18);
+  --rule: #cdc9c1;
+  --muted: #6b6b75;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: ui-serif, Georgia, "Times New Roman", serif;
+  color: var(--ink);
+  background: var(--bg);
+  margin: 0;
+  padding: 2rem clamp(1rem, 4vw, 3rem);
+  line-height: 1.5;
+}
+
+header { border-bottom: 1px solid var(--rule); padding-bottom: 1rem; margin-bottom: 1.5rem; }
+h1 { font-size: 1.6rem; margin: 0 0 0.5rem 0; }
+.lede { max-width: 72ch; margin: 0; color: #4a4a55; }
+
+code, output, kbd {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.95em;
+}
+kbd {
+  border: 1px solid var(--rule);
+  border-bottom-width: 2px;
+  border-radius: 3px;
+  padding: 0 0.35em;
+  background: white;
+  font-size: 0.85em;
+}
+
+.controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+fieldset {
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 0.75rem 1rem;
+  background: white;
+}
+legend { padding: 0 0.4em; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+label { display: flex; align-items: center; gap: 0.5em; margin: 0.4em 0; font-size: 0.95rem; }
+label.file { flex-direction: column; align-items: flex-start; gap: 0.25em; }
+input[type="number"] { width: 5em; padding: 0.2em 0.4em; border: 1px solid var(--rule); border-radius: 3px; font: inherit; }
+
+button {
+  padding: 0.4em 1em;
+  border: 1px solid var(--rule);
+  background: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font: inherit;
+  margin-right: 0.5em;
+}
+button:hover { background: #f0ebe1; }
+button:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+.hint { font-size: 0.85rem; color: var(--muted); margin: 0.5em 0 0 0; }
+.readouts { font-size: 0.95rem; margin: 0; }
+.readouts output { color: var(--accent); font-weight: 600; }
+
+.done {
+  margin: 0.5em 0 0 0;
+  padding: 0.4em 0.75em;
+  background: var(--ok-soft);
+  color: var(--ok);
+  border-radius: 4px;
+  display: inline-block;
+  font-weight: 600;
+}
+/* CSS display:inline-block above overrides the browser's default [hidden]
+   rule, which would otherwise hide the badge. Reinstate it explicitly. */
+.done[hidden] { display: none; }
+
+.error {
+  background: var(--bad-soft);
+  border: 1px solid var(--bad);
+  color: var(--bad);
+  padding: 0.5em 0.75em;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  margin: 0.5em 0 0 0;
+}
+
+.timeline-wrap {
+  background: white;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 0.75rem;
+  margin: 0.5rem 0 1.5rem 0;
+}
+#timeline {
+  width: 100%;
+  height: 240px;
+  display: block;
+  cursor: pointer;
+  touch-action: none;
+}
+#timeline.dragging { cursor: grabbing; }
+
+.legend-swatch {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  vertical-align: -3px;
+  border-radius: 2px;
+  margin-right: 0.15em;
+}
+.legend-swatch.ok { background: var(--ok-soft); border: 1px solid var(--ok); }
+.legend-swatch.bad { background: var(--bad-soft); border: 1px solid var(--bad); }
+.legend-swatch.pickup { background: var(--pickup-soft); border: 1px solid var(--rule); }
+.legend-swatch.dot { background: var(--accent); border-radius: 50%; width: 12px; height: 12px; }
+
+.export { margin: 1rem 0; }
