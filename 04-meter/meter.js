@@ -23,14 +23,18 @@ function segmentFor(meterMap, beatIndex) {
 }
 
 // Map a beat index to { bar, positionInBar, isDownbeat }.
-// bar and positionInBar are zero-based. positionInBar === 0 is the downbeat.
 //
-// Within a single constant-meter run this is literally:
-//   positionInBar = (beatIndex - segmentStart) % beatsPerBar
+// `bar` is zero-based (bar 0 = first bar after the pickup). `positionInBar`
+// is **1-indexed** to match beat_this's beatInBar convention -- the
+// downbeat is 1, second beat is 2, etc. up to beatsPerBar. isDownbeat is
+// true when positionInBar === 1.
+//
+// Within a single constant-meter run this is:
+//   positionInBar = ((beatIndex - segmentStart) mod beatsPerBar) + 1
 //   bar           = barsBefore + floor((beatIndex - segmentStart) / beatsPerBar)
-// i.e. one modulo and one division. The loop below only exists to carry the
-// running bar count across meter changes, since each change can start a run of
-// a different length.
+// i.e. one modulo plus a +1 shift for the 1-based display, and one division.
+// The loop below only exists to carry the running bar count across meter
+// changes, since each change can start a run of a different length.
 export function barPositionOf(meterMap, beatIndex) {
   if (beatIndex < 0) throw new Error("beatIndex must be >= 0");
   let barsBefore = 0;
@@ -41,9 +45,9 @@ export function barPositionOf(meterMap, beatIndex) {
     const segEnd = next ? next.fromBeat : Infinity; // exclusive
     if (beatIndex < segEnd) {
       const offset = beatIndex - segStart;
-      const positionInBar = offset % seg.beatsPerBar;
+      const positionInBar = (offset % seg.beatsPerBar) + 1;
       const bar = barsBefore + Math.floor(offset / seg.beatsPerBar);
-      return { bar, positionInBar, isDownbeat: positionInBar === 0 };
+      return { bar, positionInBar, isDownbeat: positionInBar === 1 };
     }
     // whole segment consumed: add the bars it contained before moving on
     const span = segEnd - segStart;

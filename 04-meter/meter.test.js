@@ -25,10 +25,11 @@ describe("steady 4/4", () => {
     }
   });
 
-  it("positionInBar cycles 0,1,2,3 across the first eight beats", () => {
-    // The whole meter layer in one line: positionInBar = beatIndex % 4.
-    // Spelling it out as a sequence makes that cycle visible.
-    const expected = [0, 1, 2, 3, 0, 1, 2, 3];
+  it("positionInBar cycles 1,2,3,4 across the first eight beats", () => {
+    // positionInBar is 1-indexed (matching beat_this's beatInBar) so the
+    // downbeat is 1, second beat 2, etc. The cycle is offset by +1 from
+    // the underlying mod-4: ((beatIndex - 0) % 4) + 1.
+    const expected = [1, 2, 3, 4, 1, 2, 3, 4];
     for (let i = 0; i < expected.length; i++) {
       expect(barPositionOf(m, i).positionInBar).toBe(expected[i]);
     }
@@ -47,19 +48,20 @@ describe("meter changes mid-sequence", () => {
   it("beat 8 (start of new meter) is a downbeat", () => {
     const r = barPositionOf(m, 8);
     expect(r.isDownbeat).toBe(true);
-    expect(r.positionInBar).toBe(0);
+    expect(r.positionInBar).toBe(1);
   });
 
   it("beat 11 is the next downbeat (8 + 3)", () => {
     const r = barPositionOf(m, 11);
     expect(r.isDownbeat).toBe(true);
-    expect(r.positionInBar).toBe(0);
+    expect(r.positionInBar).toBe(1);
   });
 
-  it("beat 10 is NOT a downbeat (position 2 of bar)", () => {
+  it("beat 10 is NOT a downbeat (position 3 of the 3/4 bar)", () => {
+    // 1-indexed positionInBar: beat 8 is position 1, beat 9 is 2, beat 10 is 3.
     const r = barPositionOf(m, 10);
     expect(r.isDownbeat).toBe(false);
-    expect(r.positionInBar).toBe(2);
+    expect(r.positionInBar).toBe(3);
   });
 
   it("bar count is continuous across the meter change", () => {

@@ -26,9 +26,16 @@
 // same integral evaluated for three different shapes of BPM(b).
 //
 // All functions take a `model`, an array of warp markers sorted by beat:
-//   [{ beat: 0, second: 0 }, { beat: 4, second: 2 }, ...]
+//   [{ beat: 1, second: 0.5 }, { beat: 2, second: 1.0 }, ...]
 // A marker PINS a musical beat to an audio second. Tempo is never stored;
 // it is DERIVED from the gap between two markers (see segmentBpm below).
+//
+// IMPORTANT: the `.beat` field is the SEQUENTIAL beat number, 1-indexed --
+// matching beat_this's convention that beat maps never have a "beat 0"
+// (the first row of any .beats file has beatInBar in 1..N). The integration
+// anchor is still beta = 0 at second = 0 -- but no marker sits there. The
+// math layer treats the interval from (0, 0) to the first marker as an
+// implicit segment whose slope is consistent with that first marker.
 // ===========================================================================
 // </doc>
 
@@ -123,16 +130,34 @@ export function constantMap(bpm) {
 // </doc>
 export function piecewiseConstantMap(markers) {
   const m = [...markers].sort((p, q) => p.beat - q.beat);
-  if (m[0].beat !== 0 || m[0].second !== 0) {
-    // Anchor the map at the origin so beat 0 = second 0. Real beat_this output
-    // rarely starts exactly at 0, which is why your example computes a pickup
-    // offset; here we keep it simple and assume a leading {beat:0, second:0}.
-    throw new Error("model must start at {beat:0, second:0}");
+  if (m.length < 1) {
+    throw new Error("piecewiseConstantMap requires at least one marker");
+  }
+  if (m[0].beat <= 0) {
+    // The integration anchor lives at (beta=0, second=0). The first marker
+    // is the FIRST BEAT in the file -- which beat_this never numbers 0:
+    // its first row is some beatInBar in 1..N, and we treat the sequential
+    // beat number as 1-indexed too. So the first marker's .beat is >= 1.
+    throw new Error("first marker.beat must be >= 1 (sequential beat number)");
+  }
+  if (m[0].second < 0) {
+    throw new Error("first marker.second must be >= 0");
   }
 
+  // The "implicit segment" between the integration anchor (0, 0) and the
+  // first marker. beat_this output starts at some t > 0; everything before
+  // that is the lead-in. We treat that lead-in as if it had a uniform
+  // tempo equal to whatever turns out to be consistent with the markers
+  // (i.e. slope from (0,0) to the first marker). beatsToSeconds(0) = 0
+  // by definition; beatsToSeconds(beta) for 0 < beta < m[0].beat
+  // interpolates linearly from (0,0) to (m[0].beat, m[0].second).
   function beatsToSeconds(beta) {
     if (beta <= 0) return 0;
-    let acc = 0;
+    // Pre-first-marker interval: implicit segment from (0,0) to m[0].
+    if (beta < m[0].beat) {
+      return (beta / m[0].beat) * m[0].second;
+    }
+    let acc = m[0].second;
     for (let i = 0; i < m.length - 1; i++) {
       const a = m[i], b = m[i + 1];
       if (beta >= b.beat) {
@@ -141,19 +166,27 @@ export function piecewiseConstantMap(markers) {
         acc += b.second - a.second;
       } else {
         // beta lands inside this segment: add the partial rectangle.
-        // fraction of the segment covered, times the segment's duration.
         const frac = (beta - a.beat) / (b.beat - a.beat);
         return acc + frac * (b.second - a.second);
       }
     }
     // beta past the last marker: extrapolate using the final segment's tempo
-    const a = m[m.length - 2], b = m[m.length - 1];
-    const secPerBeat = (b.second - a.second) / (b.beat - a.beat);
-    return acc + (beta - b.beat) * secPerBeat;
+    if (m.length >= 2) {
+      const a = m[m.length - 2], b = m[m.length - 1];
+      const secPerBeat = (b.second - a.second) / (b.beat - a.beat);
+      return acc + (beta - b.beat) * secPerBeat;
+    }
+    // Only one marker total: extrapolate using the implicit-segment slope.
+    const secPerBeat = m[0].second / m[0].beat;
+    return acc + (beta - m[0].beat) * secPerBeat;
   }
 
   function secondsToBeats(t) {
     if (t <= 0) return 0;
+    // Pre-first-marker time interval: invert the implicit segment.
+    if (t < m[0].second) {
+      return (t / m[0].second) * m[0].beat;
+    }
     for (let i = 0; i < m.length - 1; i++) {
       const a = m[i], b = m[i + 1];
       if (t < b.second) {
@@ -161,16 +194,32 @@ export function piecewiseConstantMap(markers) {
         return a.beat + frac * (b.beat - a.beat);
       }
     }
-    const a = m[m.length - 2], b = m[m.length - 1];
-    const beatPerSec = (b.beat - a.beat) / (b.second - a.second);
-    return b.beat + (t - b.second) * beatPerSec;
+    if (m.length >= 2) {
+      const a = m[m.length - 2], b = m[m.length - 1];
+      const beatPerSec = (b.beat - a.beat) / (b.second - a.second);
+      return b.beat + (t - b.second) * beatPerSec;
+    }
+    // Only one marker: use implicit segment's slope.
+    const beatPerSec = m[0].beat / m[0].second;
+    return m[0].beat + (t - m[0].second) * beatPerSec;
   }
 
   function bpmAt(beta) {
+    // Implicit segment from (0,0) to first marker: the tempo there is
+    // whatever the lead-in slope implies. It's a coherent quantity --
+    // "the BPM you'd need to traverse the pre-first-beat audio at" --
+    // even if no marker witnesses it directly.
+    if (beta < m[0].beat) {
+      return 60 * (m[0].beat / m[0].second);
+    }
     for (let i = 0; i < m.length - 1; i++) {
       if (beta < m[i + 1].beat) return segmentBpm(m[i], m[i + 1]);
     }
-    return segmentBpm(m[m.length - 2], m[m.length - 1]);
+    if (m.length >= 2) {
+      return segmentBpm(m[m.length - 2], m[m.length - 1]);
+    }
+    // Only one marker: same implicit-segment slope.
+    return 60 * (m[0].beat / m[0].second);
   }
 
   return { beatsToSeconds, secondsToBeats, bpmAt, markers: m };

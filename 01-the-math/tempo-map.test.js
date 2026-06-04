@@ -31,11 +31,13 @@ describe("constant tempo", () => {
 });
 
 describe("piecewise-constant tempo (beat_this style)", () => {
-  // Markers: steady 120 BPM (0.5 s/beat) for 4 beats, then 60 BPM (1 s/beat).
+  // Markers: the FIRST beat is at second 0.5 (no marker at beat 0 -- beat
+  // maps never have one). Implicit lead-in segment from (0, 0) to (1, 0.5)
+  // is 120 BPM, then 120 BPM through beat 4, then 60 BPM through beat 8.
   const markers = [
-    { beat: 0, second: 0 },
-    { beat: 4, second: 2 }, // 4 beats in 2 s -> 120 BPM
-    { beat: 8, second: 6 }, // next 4 beats in 4 s -> 60 BPM
+    { beat: 1, second: 0.5 },
+    { beat: 4, second: 2 },  // 3 beats in 1.5 s -> 120 BPM
+    { beat: 8, second: 6 },  // 4 beats in 4 s   -> 60 BPM
   ];
   const map = piecewiseConstantMap(markers);
 
@@ -54,11 +56,11 @@ describe("piecewise-constant tempo (beat_this style)", () => {
   });
 
   it("equal intervals collapse to the constant case", () => {
-    // If every segment is the same tempo, the piecewise map must agree with
-    // constantMap exactly -- a good sanity check that the sum is doing the
-    // same thing as the closed form.
+    // If every segment (including the implicit lead-in) is the same tempo,
+    // the piecewise map must agree with constantMap exactly -- a good
+    // sanity check that the sum is doing the same thing as the closed form.
     const steady = piecewiseConstantMap([
-      { beat: 0, second: 0 },
+      { beat: 1, second: 0.5 },
       { beat: 4, second: 2 },
       { beat: 8, second: 4 },
     ]);
@@ -175,7 +177,7 @@ describe("BPM is the derivative -- the round trip", () => {
     // the segment slope -- which is exactly what bpmAt returns. We sample
     // safely away from the kink at beat 4 to avoid the discontinuity.
     const markers = [
-      { beat: 0, second: 0 },
+      { beat: 1, second: 0.5 },
       { beat: 4, second: 2 }, // 120 BPM
       { beat: 8, second: 6 }, // 60 BPM
     ];
@@ -207,7 +209,7 @@ describe("BPM is the derivative -- the round trip", () => {
 
 describe("pinning", () => {
   const base = [
-    { beat: 0, second: 0 },
+    { beat: 1, second: 0.5 },
     { beat: 4, second: 2 },
     { beat: 8, second: 4 },
   ];
