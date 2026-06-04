@@ -39,7 +39,8 @@ docs              @warp-math/docs           VitePress + KaTeX math + Vue demos t
 - **VitePress `<ClientOnly>` slot mounts one tick after its wrapping component.** Canvas refs are null at first `onMounted`. Pattern: `onMounted(async () => { await nextTick(); if (!canvas.value) return; … })`.
 - **Headless Playwright `AudioContext.currentTime`** advances faster than wallclock (no audio sink). Don't rely on real-time clock behavior in automated playback tests; verify math via deterministic round-trip tables instead.
 - **`Read` tool can't open PNGs > 2000px tall.** Full-page screenshots → `type: "jpeg"`.
-- **Mermaid's diagram font renders Greek letters poorly** (β looks like B at default size). Use plain-English node names with italic math hints in `<i>...</i>` subtitles, not math glyphs in node/edge labels. Math symbols stay in body text where KaTeX typesets them.
+- **Mermaid's diagram font renders Greek letters poorly** (β looks like B at default size). Use plain-English node names with line-break subtitles, not math glyphs in node/edge labels. Math symbols stay in body text where KaTeX typesets them.
+- **Mermaid edge labels clip on the right when the diagram is downscaled** (default `htmlLabels: true` uses `<foreignObject>` HTML, which doesn't scale with the SVG viewBox). Set `flowchart: { htmlLabels: false }` in the mermaid config so labels are `<text>`/`<tspan>` and scale uniformly. Cost: HTML tags (`<br/>`, `<b>`, `<i>`) no longer render in labels — use `\n` for line breaks, single-word first-line for emphasis.
 - **Static math figures via Chart.js polygons:** rectangle/trapezoid under a curve = one dataset per polygon with `fill:true` and a `(xL,0) → (xL,y) → (xR,y) → (xR,0)` point sequence. See `docs/components/RiemannRectangles.vue` / `TrapezoidSlices.vue` for the pattern.
 - **Existing chapter demos use Chart.js + plain JS.** Stay on that toolchain; do not introduce React, Tailwind, etc.
 
