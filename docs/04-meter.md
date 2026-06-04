@@ -4,13 +4,15 @@ Tempo is the integral. Meter is *not* — it is arithmetic on the beat axis. A
 quarter note at 120 BPM lasts 0.5 s in 3/4, 4/4, or 7/8; meter never changes how
 long a beat *takes*. What it decides is how beats *group*:
 
-$$\text{positionInBar} = (\beta_{\text{idx}} - \text{segStart}) \bmod \text{beatsPerBar}$$
+$$\text{positionInBar} = \left((\beta_{\text{idx}} - \text{segStart}) \bmod \text{beatsPerBar}\right) + 1$$
 
-$$\text{bar} = \text{barsBefore} + \left\lfloor\frac{\beta_{\text{idx}} - \text{segStart}}{\text{beatsPerBar}}\right\rfloor$$
+$$\text{bar} = \text{barsBefore} + \left\lfloor\frac{\beta_{\text{idx}} - \text{segStart}}{\text{beatsPerBar}}\right\rfloor + 1$$
 
-That is the whole layer — one `%` and one `/` per beat. No integration, no
-calculus. The brief loop in `barPositionOf` only exists to carry the running bar
-count across meter changes, since each change can start a run of a different
+That is the whole layer — one `%`, one `/`, and a +1 shift to keep both `bar`
+and `positionInBar` 1-indexed (matching `beat_this`'s `beatInBar` convention and
+how musicians count: bar 1, bar 2, ...; downbeat = position 1). No integration,
+no calculus. The brief loop in `barPositionOf` only exists to carry the running
+bar count across meter changes, since each change can start a run of a different
 length.
 
 <!--@include: ./.generated/meter-intro.md-->

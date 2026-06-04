@@ -105,9 +105,11 @@ drag a beat onto a new second and watch the downstream beats move.
 ### 03-real-audio
 The production path. Parses beat_this `.beats` output, builds the tempo model with
 `01-the-math`'s code, and plays it back with the playhead following the warp map.
-This is also where the real-world wrinkle lives that the teaching layer skips: real
-beat maps don't start at beat 0 / second 0, so a pickup-beat offset is needed to
-align the first downbeat to a bar boundary.
+Real beat maps never have a beat 0 — the first row of a `.beats` file is always at
+some $t > 0$, tagged with `beatInBar` 1–4. The math layer accepts that directly:
+the first marker is `{beat: 1, second: t_first}`, no time-shift needed. The
+pickup-beat offset is a separate, musical decision that lets the UI label
+downbeats and bars without dragging meter into the tempo math.
 
 ### 04-meter
 A second layer on the same beat axis. Tempo decides *when* a beat happens — that is
