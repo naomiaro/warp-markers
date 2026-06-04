@@ -37,8 +37,10 @@ let originalModel = null;
 // second-time, which lives in the tempo layer. Compute once, hand around.
 // ---------------------------------------------------------------------------
 function beatSecondsFor(snap) {
-  const out = new Array(N_BEATS + 1);
-  for (let i = 0; i <= N_BEATS; i++) out[i] = snap.tempo.beatsToSeconds(i);
+  // beatSeconds[i] is the audio time of the (i+1)-th beat (1-indexed beat
+  // number). beatsToSeconds takes the 1-based beat coordinate directly.
+  const out = new Array(N_BEATS);
+  for (let i = 0; i < N_BEATS; i++) out[i] = snap.tempo.beatsToSeconds(i + 1);
   return out;
 }
 
@@ -53,9 +55,12 @@ function durationOf(snap) {
 function renderProofTable(snap) {
   const tbody = $("proof-table").querySelector("tbody");
   while (tbody.firstChild) tbody.removeChild(tbody.firstChild);
-  for (let i = 0; i <= N_BEATS; i++) {
-    const { bar, positionInBar, isDownbeat } = barPositionOf(snap.meterMap, i);
-    const sec = snap.tempo.beatsToSeconds(i);
+  // beatNum is the 1-based beat number. Pass beatNum - 1 to barPositionOf
+  // (which still takes a 0-based beatIndex) and pass beatNum to
+  // beatsToSeconds (which uses the .beat coordinate, also 1-based now).
+  for (let beatNum = 1; beatNum <= N_BEATS; beatNum++) {
+    const { bar, positionInBar, isDownbeat } = barPositionOf(snap.meterMap, beatNum - 1);
+    const sec = snap.tempo.beatsToSeconds(beatNum);
     const tr = document.createElement("tr");
     if (isDownbeat) tr.classList.add("downbeat");
     const addCell = (text) => {
@@ -63,8 +68,8 @@ function renderProofTable(snap) {
       td.textContent = text;
       tr.appendChild(td);
     };
-    addCell(String(i));
-    addCell(String(bar + 1));
+    addCell(String(beatNum));
+    addCell(String(bar));
     addCell(String(positionInBar));
     addCell(sec.toFixed(3));
     tbody.appendChild(tr);
@@ -73,12 +78,13 @@ function renderProofTable(snap) {
 
 function renderStaticReadouts(snap) {
   // Count downbeats by asking the meter layer once per beat. The number is
-  // small, so an O(N) sweep is fine and keeps the demo honest.
+  // small, so an O(N) sweep is fine and keeps the demo honest. We display
+  // N_BEATS beats numbered 1..N_BEATS.
   let down = 0;
-  for (let i = 0; i <= N_BEATS; i++) {
+  for (let i = 0; i < N_BEATS; i++) {
     if (barPositionOf(snap.meterMap, i).isDownbeat) down++;
   }
-  $("ro-nbeats").textContent = String(N_BEATS + 1);
+  $("ro-nbeats").textContent = String(N_BEATS);
   $("ro-ndown").textContent = String(down);
 }
 
@@ -102,12 +108,13 @@ function tickFrame() {
   });
 
   // Live playhead readouts. We invert the tempo map to recover beta, then
-  // ask the meter layer for the bar/position at that beat.
+  // ask the meter layer for the bar/position at that beat. beta is the
+  // 1-based beat coordinate; beatIndex for barPositionOf is 0-based.
   const beta = snap.tempo.secondsToBeats(cur);
   $("ro-beta").textContent = beta.toFixed(2);
-  const i = Math.max(0, Math.min(N_BEATS, Math.round(beta)));
-  const { bar, positionInBar } = barPositionOf(snap.meterMap, i);
-  $("ro-bar").textContent = `bar ${bar + 1}, pos ${positionInBar}`;
+  const beatIdx = Math.max(0, Math.min(N_BEATS - 1, Math.round(beta) - 1));
+  const { bar, positionInBar } = barPositionOf(snap.meterMap, beatIdx);
+  $("ro-bar").textContent = `bar ${bar}, pos ${positionInBar}`;
 
   // Auto-pause at the end.
   if (metro.isPlaying() && cur >= dur) {

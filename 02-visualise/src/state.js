@@ -19,10 +19,11 @@ export const BETA_MAX = 12;
 
 // Builds the initial 3-segment marker model from three segment-BPM values.
 // Each segment is 4 beats long, so we just integrate (60/bpm) * 4 per segment
-// to get the seconds at each marker. The first marker is always {0, 0}
-// because piecewiseConstantMap requires it.
+// to get the seconds at each marker. NO `{beat: 0, second: 0}` anchor at
+// the front -- beat maps don't have a beat 0. The math layer's implicit
+// (0, 0) -> first-marker segment automatically picks up bpms[0]'s slope.
 function piecewiseModelFromBpms(bpms) {
-  const markers = [{ beat: 0, second: 0 }];
+  const markers = [];
   let t = 0;
   for (let i = 0; i < bpms.length; i++) {
     t += (60 / bpms[i]) * 4;

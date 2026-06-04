@@ -24,17 +24,23 @@ function segmentFor(meterMap, beatIndex) {
 
 // Map a beat index to { bar, positionInBar, isDownbeat }.
 //
-// `bar` is zero-based (bar 0 = first bar after the pickup). `positionInBar`
-// is **1-indexed** to match beat_this's beatInBar convention -- the
-// downbeat is 1, second beat is 2, etc. up to beatsPerBar. isDownbeat is
-// true when positionInBar === 1.
+// Both `bar` and `positionInBar` are **1-indexed** -- matching musician
+// counting and beat_this's beatInBar convention. Bar 1 is the first bar;
+// the downbeat of every bar is positionInBar === 1. isDownbeat is true
+// exactly when positionInBar === 1.
+//
+// `beatIndex` (the input) is the 0-indexed array index of the beat in the
+// sequence. So markers[0] -> beatIndex 0 -> bar 1, positionInBar 1 for a
+// no-pickup 4/4 file. `meterMap.fromBeat` is also a 0-indexed beatIndex.
+// (Array indices stay 0-based by JS convention; labels are 1-indexed.)
 //
 // Within a single constant-meter run this is:
 //   positionInBar = ((beatIndex - segmentStart) mod beatsPerBar) + 1
-//   bar           = barsBefore + floor((beatIndex - segmentStart) / beatsPerBar)
-// i.e. one modulo plus a +1 shift for the 1-based display, and one division.
-// The loop below only exists to carry the running bar count across meter
-// changes, since each change can start a run of a different length.
+//   bar           = barsBefore + floor((beatIndex - segmentStart) / beatsPerBar) + 1
+// i.e. one modulo and one division, each with a +1 shift for 1-based
+// display. The loop below only exists to carry the running bar count
+// across meter changes, since each change can start a run of a different
+// length.
 export function barPositionOf(meterMap, beatIndex) {
   if (beatIndex < 0) throw new Error("beatIndex must be >= 0");
   let barsBefore = 0;
@@ -46,7 +52,7 @@ export function barPositionOf(meterMap, beatIndex) {
     if (beatIndex < segEnd) {
       const offset = beatIndex - segStart;
       const positionInBar = (offset % seg.beatsPerBar) + 1;
-      const bar = barsBefore + Math.floor(offset / seg.beatsPerBar);
+      const bar = barsBefore + Math.floor(offset / seg.beatsPerBar) + 1;
       return { bar, positionInBar, isDownbeat: positionInBar === 1 };
     }
     // whole segment consumed: add the bars it contained before moving on

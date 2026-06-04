@@ -68,7 +68,7 @@ export function drawTimeline(canvas, { snap, currentSec, durationSec, draggedBea
     if (isDownbeat) {
       ctx.fillStyle = COLOR.axisText;
       ctx.font = "11px ui-monospace, monospace";
-      ctx.fillText(`bar ${bar + 1}`, x + 3, cssH * 0.12);
+      ctx.fillText(`bar ${bar}`, x + 3, cssH * 0.12);
     }
 
     // Below the baseline, write the beat index every 4 beats so the user can
@@ -141,8 +141,9 @@ export function pickMarkerIndex(canvas, clientX, clientY, model, durationSec) {
 
   let best = null;
   let bestD = HIT_RADIUS;
-  // skip 0 (anchor at start) and last (anchor at end)
-  for (let k = 1; k < model.length - 1; k++) {
+  // Skip the LAST marker (right-edge anchor). All other markers are
+  // draggable -- no special "beat 0" anchor anymore.
+  for (let k = 0; k < model.length - 1; k++) {
     const x = xFor(model[k].second);
     const y = cssH * 0.7;
     const dx = clientX - rect.left - x;

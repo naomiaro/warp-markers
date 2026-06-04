@@ -30,7 +30,7 @@ async function loadBeatsFromText(text, sourceLabel) {
     state.grid = buildGrid(parsed);
     $("beats-status").textContent =
       `${sourceLabel}: ${parsed.length} beats · pickup ${state.grid.pickupBeats} · ` +
-      `audio offset ${state.grid.audioOffsetSec.toFixed(3)} s · ` +
+      `first beat at ${state.grid.model[0].second.toFixed(3)} s · ` +
       `${state.grid.barBoundaries.length} bars`;
     renderDebugTable();
   } catch (err) {
@@ -169,7 +169,7 @@ function renderDebugTable() {
     tr.appendChild(td);
   };
   for (let i = 0; i < N; i++) {
-    const parsedT = state.grid.model[i].second + state.grid.audioOffsetSec;
+    const parsedT = state.grid.model[i].second;
     const beta = audioSecToBeat(parsedT, state.grid);
     const tPrime = beatToAudioSec(beta, state.grid);
     const tr = document.createElement("tr");

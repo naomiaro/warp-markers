@@ -54,7 +54,7 @@ export function drawTimeline(canvas, { grid, durationSec, currentAudioSec }) {
   // Beat ticks.
   for (let i = 0; i < grid.model.length; i++) {
     const beat = grid.model[i].beat;
-    const audioSec = grid.model[i].second + grid.audioOffsetSec;
+    const audioSec = grid.model[i].second;
     const x = xFor(audioSec);
     const isDownbeat =
       grid.barBoundaries.length > 0 &&
@@ -71,7 +71,10 @@ export function drawTimeline(canvas, { grid, durationSec, currentAudioSec }) {
     if (isDownbeat) {
       ctx.fillStyle = COLOR.axisText;
       ctx.font = "11px ui-monospace, monospace";
-      const barNumber = (beat - grid.pickupBeats) / 4 + 1;
+      // beat is the 1-indexed beat number; first downbeat is at
+      // .beat = pickupBeats + 1. Bar 1 starts there, bar 2 four beats
+      // later, etc.
+      const barNumber = (beat - grid.pickupBeats - 1) / 4 + 1;
       // Just the number (no "bar " prefix) and horizontally centred above
       // the downbeat tick. textAlign center pins the text's centre to x;
       // restored to default after so the pickup labels below stay

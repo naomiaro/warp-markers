@@ -28,8 +28,10 @@ const PRESETS = {
 function defaultWarpModel(bpm) {
   const secPerBeat = 60 / bpm;
   const mid = Math.floor(N_BEATS / 2);
+  // No {beat:0, second:0} anchor -- beat maps don't have a beat 0; the
+  // math layer's implicit lead-in segment handles the gap from (0,0)
+  // to the first marker.
   return [
-    { beat: 0, second: 0 },
     { beat: mid, second: mid * secPerBeat },
     { beat: N_BEATS, second: N_BEATS * secPerBeat },
   ];
@@ -93,7 +95,7 @@ function draw() {
     if (isDownbeat) {
       ctx.fillStyle = C.axis;
       ctx.font = "11px monospace";
-      ctx.fillText(`bar ${bar + 1}`, x + 3, cssH * 0.12);
+      ctx.fillText(`bar ${bar}`, x + 3, cssH * 0.12);
     }
   }
 
@@ -122,7 +124,8 @@ function pickMarker(evt) {
   const my = evt.clientY - rect.top;
   let best = null;
   let bestD = 16;
-  for (let k = 1; k < ui.model.length - 1; k++) {
+  // Skip the LAST marker (right-edge anchor). All other markers are draggable.
+  for (let k = 0; k < ui.model.length - 1; k++) {
     const x = xFor(ui.model[k].second);
     const y = rect.height * 0.7;
     const d = Math.hypot(mx - x, my - y);
@@ -195,14 +198,17 @@ onBeforeUnmount(() => cleanupTheme?.());
       </p>
 
       <table>
-        <thead><tr><th>beat i</th><th>bar (meter)</th><th>pos (meter)</th><th>second (tempo)</th></tr></thead>
+        <thead><tr><th>beat</th><th>bar (meter)</th><th>beat in bar (meter)</th><th>second (tempo)</th></tr></thead>
         <tbody>
-          <template v-for="i in N_BEATS + 1" :key="i - 1">
+          <!-- v-for "i in N" iterates i = 1..N (Vue convention). i is the
+               1-based beat number we display AND pass to beatsToSeconds.
+               barPositionOf still takes a 0-based beatIndex (i - 1). -->
+          <template v-for="i in N_BEATS" :key="i">
             <tr :class="{ flag: barPositionOf(PRESETS[ui.preset], i - 1).isDownbeat }">
-              <td>{{ i - 1 }}</td>
-              <td>{{ barPositionOf(PRESETS[ui.preset], i - 1).bar + 1 }}</td>
+              <td>{{ i }}</td>
+              <td>{{ barPositionOf(PRESETS[ui.preset], i - 1).bar }}</td>
               <td>{{ barPositionOf(PRESETS[ui.preset], i - 1).positionInBar }}</td>
-              <td>{{ tempoMap().beatsToSeconds(i - 1).toFixed(3) }}</td>
+              <td>{{ tempoMap().beatsToSeconds(i).toFixed(3) }}</td>
             </tr>
           </template>
         </tbody>

@@ -65,15 +65,15 @@ describe("meter changes mid-sequence", () => {
   });
 
   it("bar count is continuous across the meter change", () => {
-    // Bars 0 and 1 cover beats 0..7 (two 4-beat bars). Bar 2 must start at
-    // beat 8 (no gap, no overlap) and bar 3 at beat 11 (one 3-beat bar
+    // Bars 1 and 2 cover beats 0..7 (two 4-beat bars). Bar 3 must start at
+    // beat 8 (no gap, no overlap) and bar 4 at beat 11 (one 3-beat bar
     // later). If the implementation forgot to roll barsBefore into the new
-    // segment, you'd see bar reset to 0 here instead of continuing at 2.
-    expect(barPositionOf(m, 0).bar).toBe(0);
-    expect(barPositionOf(m, 7).bar).toBe(1); // last beat of bar 1 (4/4)
-    expect(barPositionOf(m, 8).bar).toBe(2); // first beat of bar 2 (3/4)
-    expect(barPositionOf(m, 10).bar).toBe(2); // last beat of bar 2
-    expect(barPositionOf(m, 11).bar).toBe(3); // first beat of bar 3
+    // segment, you'd see bar reset to 1 here instead of continuing at 3.
+    expect(barPositionOf(m, 0).bar).toBe(1);
+    expect(barPositionOf(m, 7).bar).toBe(2); // last beat of bar 2 (4/4)
+    expect(barPositionOf(m, 8).bar).toBe(3); // first beat of bar 3 (3/4)
+    expect(barPositionOf(m, 10).bar).toBe(3); // last beat of bar 3
+    expect(barPositionOf(m, 11).bar).toBe(4); // first beat of bar 4
   });
 });
 

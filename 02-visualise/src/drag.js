@@ -24,13 +24,15 @@ function distancePx(chart, evt, marker) {
   return Math.hypot(mx - px, my - py);
 }
 
-// Find the closest marker within the hit radius, or null. The very first
-// marker {0,0} is the anchor of the whole map; we don't let users drag it.
+// Find the closest marker within the hit radius, or null. The LAST marker
+// is the right-edge anchor (defines the end of the timeline); we exclude
+// it from dragging so the chart's x-axis stays sane. Every other marker
+// is draggable -- there's no special "beat 0" anchor anymore since beat
+// maps don't have one.
 function pickMarker(chart, evt, model) {
   let best = null;
   let bestDist = HIT_RADIUS_PX;
-  // Skip index 0 -- the {0,0} anchor must stay put.
-  for (let i = 1; i < model.length; i++) {
+  for (let i = 0; i < model.length - 1; i++) {
     const d = distancePx(chart, evt, model[i]);
     if (d < bestDist) {
       best = i;

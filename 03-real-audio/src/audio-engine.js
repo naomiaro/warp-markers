@@ -74,7 +74,8 @@ export function createEngine() {
     // Synth mode: the timeline runs until the last beat plus a small tail.
     if (!grid) return 0;
     const lastModelSec = grid.model[grid.model.length - 1].second;
-    return lastModelSec + grid.audioOffsetSec + 1;
+    // model.second IS audio second under the new convention; no shift.
+    return lastModelSec + 1;
   }
 
   function getCurrentAudioSec() {
@@ -111,7 +112,7 @@ export function createEngine() {
       // Synth mode: schedule a click at every beat at or after the start.
       if (!clickBuffer) clickBuffer = makeClickBuffer(ctx, SHORT_CLICK_SECONDS);
       for (const m of grid.model) {
-        const audioSec = m.second + grid.audioOffsetSec;
+        const audioSec = m.second;
         if (audioSec < startedFromAudioSec) continue;
         const when =
           startedAtCtxTime + (audioSec - startedFromAudioSec);

@@ -30,15 +30,15 @@ export const METER_PRESETS = {
   ],
 };
 
-// Build a fresh warp-marker model for the given constant BPM. Three markers:
-// start, midpoint, and end. The midpoint is what the user drags; the other
-// two anchor the timeline. Using three rather than two keeps the dragged
-// segment local -- only beats between {0, mid} and {mid, end} get rescaled.
+// Build a fresh warp-marker model for the given constant BPM. Two markers:
+// midpoint and end. The midpoint is what the user drags; the end anchors
+// the timeline's right edge. No marker at beat 0 -- beat maps don't have
+// one; the implicit lead-in from (0,0) to the first marker is at the
+// same BPM by construction.
 export function defaultWarpModel(bpm) {
   const secPerBeat = 60 / bpm;
   const mid = Math.floor(N_BEATS / 2);
   return [
-    { beat: 0, second: 0 },
     { beat: mid, second: mid * secPerBeat },
     { beat: N_BEATS, second: N_BEATS * secPerBeat },
   ];

@@ -42,7 +42,9 @@ const ui = reactive({
 });
 
 function initialPiecewiseModel(bpms) {
-  const markers = [{ beat: 0, second: 0 }];
+  // No {0,0} anchor: beat maps don't have a beat 0. The math layer
+  // handles the (0,0) -> first-marker implicit segment automatically.
+  const markers = [];
   let t = 0;
   for (let i = 0; i < bpms.length; i++) {
     t += (60 / bpms[i]) * 4;
@@ -127,7 +129,9 @@ function pickMarker(chart, evt, model) {
   const my = evt.clientY - rect.top;
   let best = null;
   let bestDist = 14;
-  for (let i = 1; i < model.length; i++) {
+  // No {0,0} anchor to skip anymore; all markers except the last (timeline
+  // right edge) are draggable. The last-marker exclusion is handled below.
+  for (let i = 0; i < model.length - 1; i++) {
     const px = chart.scales.x.getPixelForValue(model[i].beat);
     const py = chart.scales.y.getPixelForValue(model[i].second);
     const d = Math.hypot(mx - px, my - py);
