@@ -1,0 +1,130 @@
+:root {
+  --bg: #faf7f2;
+  --ink: #2a2a30;
+  --accent: #b8470b;
+  --accent-soft: #b8470b22;
+  --rule: #cdc9c1;
+  --grid: #e9e4d9;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: ui-serif, Georgia, "Times New Roman", serif;
+  color: var(--ink);
+  background: var(--bg);
+  margin: 0;
+  padding: 2rem clamp(1rem, 4vw, 3rem);
+  line-height: 1.5;
+}
+
+header {
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+h1 {
+  font-size: 1.6rem;
+  margin: 0 0 0.5rem 0;
+  letter-spacing: -0.01em;
+}
+
+.lede {
+  max-width: 64ch;
+  margin: 0;
+  color: #4a4a55;
+}
+
+code, output {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.95em;
+}
+
+.controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+fieldset {
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 0.75rem 1rem;
+  background: white;
+}
+
+legend {
+  padding: 0 0.4em;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6b6b75;
+}
+
+label {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  margin: 0.35em 0;
+  font-size: 0.95rem;
+}
+
+input[type="range"] { flex: 1; }
+
+.hint {
+  font-size: 0.85rem;
+  color: #6b6b75;
+  margin: 0.25em 0 0.5em 0;
+}
+
+.readouts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
+  font-size: 0.9rem;
+  margin: 0.5em 0 0 0;
+}
+
+.readouts strong { color: var(--accent); }
+
+.pin-desc {
+  margin: 0.5em 0 0 0;
+  font-size: 0.85rem;
+  color: #6b6b75;
+  min-height: 1.5em;
+}
+
+.charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  gap: 1.5rem;
+}
+
+figure {
+  margin: 0;
+  background: white;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 1rem;
+}
+
+figcaption {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: #6b6b75;
+  font-style: italic;
+}
+
+/* Chart.js responsive + maintainAspectRatio:false REQUIRES a fixed-height
+   parent. The figure provides it; the canvas fills it. */
+figure > .chart-wrap {
+  position: relative;
+  width: 100%;
+  height: 360px;
+}
+canvas { cursor: default; }
+
+#warp-chart { cursor: grab; }
+#warp-chart.dragging { cursor: grabbing; }

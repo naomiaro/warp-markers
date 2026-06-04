@@ -1,0 +1,19 @@
+{
+  "name": "@warp-math/visualise",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "The warp-map integral made visible. Imports 01-the-math directly so the picture and the math cannot drift.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@warp-math/the-math": "*",
+    "chart.js": "^4.4.0"
+  },
+  "devDependencies": {
+    "vite": "^5.4.0"
+  }
+}

@@ -8,6 +8,11 @@ coverage/
 .env
 .env.local
 
+# playwright/test artifacts
+.playwright-mcp/
+*.png
+*.jpg
+
 # audio + beat fixtures can be large; ignore by default, commit small samples explicitly
 03-real-audio/audio/*
 !03-real-audio/audio/.gitkeep

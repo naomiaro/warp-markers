@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>warp-math · the integral, made visible</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>warp-math · the integral, made visible</h1>
+      <p class="lede">
+        Two charts wired to <code>01-the-math</code>. The left chart shows
+        <code>60/BPM(b)</code> &mdash; seconds per beat. The <em>shaded area</em>
+        under that curve from 0 to &beta; <em>is</em> the elapsed-seconds value
+        on the right chart at the same &beta;. That equality is the integral
+        <code>t(&beta;) = &int;<sub>0</sub><sup>&beta;</sup> 60/BPM(b) db</code>.
+      </p>
+    </header>
+
+    <section class="controls">
+      <fieldset>
+        <legend>tempo regime</legend>
+        <label><input type="radio" name="regime" value="constant" checked /> constant</label>
+        <label><input type="radio" name="regime" value="piecewise" /> piecewise-constant</label>
+        <label><input type="radio" name="regime" value="ramp" /> linear ramp</label>
+      </fieldset>
+
+      <fieldset id="constant-controls" class="regime-controls">
+        <legend>constant BPM</legend>
+        <label>BPM <input type="range" id="constant-bpm" min="40" max="240" value="120" step="1" /> <output id="constant-bpm-readout">120</output></label>
+      </fieldset>
+
+      <fieldset id="piecewise-controls" class="regime-controls" hidden>
+        <legend>piecewise-constant: drag dots on the right chart to pin beats</legend>
+        <p class="hint">Three segments of 4 beats each. Use the sliders to set each segment's tempo, or drag the dots in the warp-map chart to re-pin a beat.</p>
+        <label>seg 1 BPM <input type="range" id="seg1-bpm" min="40" max="240" value="120" step="1" /> <output id="seg1-bpm-readout">120</output></label>
+        <label>seg 2 BPM <input type="range" id="seg2-bpm" min="40" max="240" value="90" step="1" /> <output id="seg2-bpm-readout">90</output></label>
+        <label>seg 3 BPM <input type="range" id="seg3-bpm" min="40" max="240" value="150" step="1" /> <output id="seg3-bpm-readout">150</output></label>
+      </fieldset>
+
+      <fieldset id="ramp-controls" class="regime-controls" hidden>
+        <legend>linear ramp (an accelerando)</legend>
+        <label>start BPM <input type="range" id="ramp-start" min="40" max="240" value="80" step="1" /> <output id="ramp-start-readout">80</output></label>
+        <label>end BPM <input type="range" id="ramp-end" min="40" max="240" value="200" step="1" /> <output id="ramp-end-readout">200</output></label>
+        <label>length (beats) <input type="range" id="ramp-length" min="4" max="32" value="16" step="1" /> <output id="ramp-length-readout">16</output></label>
+      </fieldset>
+
+      <fieldset>
+        <legend>readout at &beta; =</legend>
+        <label>
+          <input type="range" id="beta-cursor" min="0" max="12" value="6" step="0.05" />
+          <output id="beta-readout">6.00</output> beats
+        </label>
+        <p class="readouts">
+          <span><strong><code>beatsToSeconds(&beta;)</code></strong> = <output id="t-of-beta">&mdash;</output> s</span>
+          <span>shaded area under <code>60/BPM</code> from 0 to &beta; = <output id="area-readout">&mdash;</output> s</span>
+          <span>residual: <output id="residual-readout">&mdash;</output> s</span>
+        </p>
+        <p id="pin-description" class="pin-desc"></p>
+      </fieldset>
+    </section>
+
+    <section class="charts">
+      <figure>
+        <div class="chart-wrap"><canvas id="tempo-chart"></canvas></div>
+        <figcaption>
+          <code>60/BPM(b)</code> &mdash; seconds per beat. The shaded area from 0
+          to &beta; is the elapsed seconds on the right.
+        </figcaption>
+      </figure>
+      <figure>
+        <div class="chart-wrap"><canvas id="warp-chart"></canvas></div>
+        <figcaption>
+          the warp map <code>t(&beta;)</code>. In piecewise mode, drag the
+          coloured dots to pin a beat to a new second.
+        </figcaption>
+      </figure>
+    </section>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
