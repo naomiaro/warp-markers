@@ -10,6 +10,7 @@ import {
   constantMap,
   piecewiseConstantMap,
   linearRampMap,
+  curvedMap,
   segmentBpm,
 } from "./tempo-map.js";
 import { pin, describePin } from "./warp-marker.js";
@@ -90,6 +91,62 @@ describe("linear tempo ramp (the logarithm)", () => {
     const flat = linearRampMap(150, 150, 8);
     const cst = constantMap(150);
     expect(close(flat.beatsToSeconds(8), cst.beatsToSeconds(8))).toBe(true);
+  });
+});
+
+describe("curved tempo (numerical integration)", () => {
+  // k = 1 should reduce to the linear ramp, because the integrand becomes
+  // identical -- BPM = b0 + Delta * (b/L)^1 = b0 + (Delta/L)*b. The two
+  // differ only by HOW we compute the integral: the linear map uses the
+  // closed-form logarithm, the curved map evaluates a trapezoidal sum. So
+  // we expect agreement to numerical-noise level, not bit-identical.
+  it("k = 1 reproduces the linear ramp (numerical vs. closed form)", () => {
+    const linear = linearRampMap(120, 240, 8);
+    const curved = curvedMap(120, 240, 8, 1);
+    // ~1e-3 tolerance: trapezoid with n = 512 over an 8-beat ramp gives an
+    // O(h^2) error well below 1e-4 here, but we leave headroom.
+    for (const b of [0.5, 2, 5, 8]) {
+      expect(Math.abs(curved.beatsToSeconds(b) - linear.beatsToSeconds(b))).toBeLessThan(1e-3);
+    }
+  });
+
+  it("round-trips beats -> seconds -> beats via bisection", () => {
+    // ~1e-4 tolerance: bisection converges to TOL = 1e-9 internally, but the
+    // forward direction is a trapezoidal approximation, so the round-trip
+    // error is dominated by quadrature error in beatsToSeconds.
+    const map = curvedMap(80, 200, 16, 2);
+    for (const b of [0.5, 3, 7, 12, 16]) {
+      expect(Math.abs(map.secondsToBeats(map.beatsToSeconds(b)) - b)).toBeLessThan(1e-4);
+    }
+  });
+
+  it("ease-in (k = 2 accelerando) puts the midpoint LATER than linear", () => {
+    // For an accelerando with k = 2 the early bars are slower than the linear
+    // ramp (the tempo barely moves at first, then catches up). Slower beats
+    // take more seconds, so beatsToSeconds at the midpoint should be larger
+    // for the curved case than for the linear case.
+    const linear = linearRampMap(120, 240, 8);
+    const curved = curvedMap(120, 240, 8, 2);
+    expect(curved.beatsToSeconds(4)).toBeGreaterThan(linear.beatsToSeconds(4));
+  });
+
+  it("start == end collapses to the constant case", () => {
+    // No matter what k is, if start == end the BPM is constant and the
+    // integral is one division. We check that the curved map agrees with
+    // constantMap to machine precision (this branch IS exact).
+    const curved = curvedMap(150, 150, 8, 2);
+    const cst = constantMap(150);
+    for (const b of [0, 1, 3.7, 8]) {
+      expect(close(curved.beatsToSeconds(b), cst.beatsToSeconds(b))).toBe(true);
+    }
+  });
+
+  it("rejects k <= 0 and lengthBeats <= 0", () => {
+    // Both are domain errors: a non-positive exponent collapses or inverts
+    // the curve, and a non-positive length divides by zero in (b/L)^k.
+    expect(() => curvedMap(120, 240, 8, 0)).toThrow();
+    expect(() => curvedMap(120, 240, 8, -1)).toThrow();
+    expect(() => curvedMap(120, 240, 0, 2)).toThrow();
   });
 });
 

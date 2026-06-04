@@ -200,3 +200,128 @@ export function linearRampMap(startBpm, endBpm, lengthBeats) {
 
   return { beatsToSeconds, secondsToBeats, bpmAt };
 }
+
+
+// ===========================================================================
+// REGIME 4: CURVED TEMPO  (ease in / ease out -- the one without a formula)
+//
+// Now let tempo follow a POWER curve between start and end over L beats, with
+// an "easing exponent" k that bends the shape:
+//
+//   BPM(b) = b0 + (b1 - b0) * (b / L)^k         ,   k > 0
+//
+// k = 1 is the linear ramp from REGIME 3 -- a straight line in tempo.
+// k > 1 eases IN: tempo changes slowly at first, then rushes (concave-up
+//   when accelerating, concave-down when decelerating).
+// 0 < k < 1 eases OUT: tempo changes quickly at first, then settles.
+// This is the shape DAW tempo-automation lanes actually use.
+//
+// Why we change tactics here
+// --------------------------
+// The integral we want is still the same one:
+//
+//   t(beta) = integral 0..beta of  60 / BPM(b)  db
+//           = integral 0..beta of  60 / ( b0 + Delta * (b/L)^k )  db
+//
+// For k = 1 we just solved this with the "integral of 1/(linear)" rule. For
+// k = 2 the integrand is 60 / (b0 + Delta * b^2 / L^2) -- a constant over a
+// quadratic. Its antiderivative is an arctangent (or a log, depending on the
+// sign of Delta), but the formulas get hairier and stop generalising. For
+// general non-integer k -- which is exactly what you want from a smooth
+// easing slider -- the antiderivative has NO ELEMENTARY CLOSED FORM. There
+// is simply no combination of polynomials, exponentials, logarithms, and
+// trig that evaluates this integral for arbitrary k.
+//
+// So we stop trying to solve the integral symbolically and EVALUATE it
+// numerically. The method:
+//
+//   TRAPEZOIDAL RULE.  Slice the interval 0..beta into n equal pieces of
+//     width h = beta/n. On each slice, approximate the area under 60/BPM
+//     by a trapezoid with parallel sides 60/BPM(x_i) and 60/BPM(x_{i+1}).
+//     Summing across slices,
+//
+//         integral approx (h/2) * ( f(x_0) + 2 f(x_1) + ... + 2 f(x_{n-1}) + f(x_n) )
+//
+//     The error shrinks like O(h^2). With n = 512 over a few seconds of
+//     audio, the residual is far below anything an ear can hear.
+//
+// And the inverse:
+//
+//   BISECTION.  We need secondsToBeats(t). beatsToSeconds is STRICTLY
+//     INCREASING (because BPM(b) > 0 means 60/BPM is positive, so the
+//     integral is monotone), so for any target t there is exactly one beta
+//     with beatsToSeconds(beta) = t. Binary-search for it: keep an interval
+//     [lo, hi] known to bracket the answer, and halve it until the width is
+//     under tolerance. Monotonicity is what makes this safe -- without it,
+//     bisection could converge to the wrong root.
+// ===========================================================================
+export function curvedMap(startBpm, endBpm, lengthBeats, k = 2) {
+  if (k <= 0) throw new Error("curvedMap requires k > 0");
+  if (lengthBeats <= 0) throw new Error("curvedMap requires lengthBeats > 0");
+
+  const delta = endBpm - startBpm;
+
+  function bpmAt(beta) {
+    // (beta / L)^k. For beta < 0 the curve is undefined; clamp to 0 so the
+    // start tempo holds for anything before the ramp begins.
+    const x = Math.max(0, beta) / lengthBeats;
+    return startBpm + delta * Math.pow(x, k);
+  }
+
+  // ---- trapezoidal integration of 60 / BPM(b) from 0 to beta ----
+  // n = 512 keeps the error well below audio-perceivable for a few tens of
+  // seconds; bumping n trades CPU for accuracy if you ever need it.
+  const TRAP_N = 512;
+  function beatsToSeconds(beta) {
+    if (beta <= 0) return 0;
+    if (Math.abs(delta) < 1e-9) {
+      // start == end: BPM is constant, the integral collapses to division.
+      // We could let the trapezoid handle this -- it would be exact for a
+      // constant integrand -- but writing it explicitly is faster and makes
+      // the "constant case is one division" rule visible.
+      return (60 / startBpm) * beta;
+    }
+    const h = beta / TRAP_N;
+    // Endpoints contribute with weight 0.5, interior points with weight 1.
+    let acc = 0.5 * (60 / bpmAt(0) + 60 / bpmAt(beta));
+    for (let i = 1; i < TRAP_N; i++) {
+      acc += 60 / bpmAt(i * h);
+    }
+    return acc * h;
+  }
+
+  // ---- bisection inverse of beatsToSeconds ----
+  function secondsToBeats(t) {
+    if (t <= 0) return 0;
+    if (Math.abs(delta) < 1e-9) return t / (60 / startBpm);
+
+    // We need an upper bracket: some beta whose beatsToSeconds(beta) >= t.
+    // Start with the ramp length and double until we cover t. This handles
+    // the case where the user asks for a second past the end of the ramp --
+    // the curve keeps extrapolating (BPM(b) = b0 + Delta*(b/L)^k is defined
+    // for b > L too), so we just walk forward until we've gone far enough.
+    let lo = 0;
+    let hi = lengthBeats;
+    let hiSec = beatsToSeconds(hi);
+    let guard = 0;
+    while (hiSec < t && guard++ < 64) {
+      lo = hi;
+      hi *= 2;
+      hiSec = beatsToSeconds(hi);
+    }
+
+    // 50 halvings = 2^-50 ≈ 1e-15 -- well past sensible audio precision.
+    // We exit early once the interval is narrower than the tolerance.
+    const TOL = 1e-9;
+    for (let i = 0; i < 50; i++) {
+      const mid = 0.5 * (lo + hi);
+      if (hi - lo < TOL) return mid;
+      const midSec = beatsToSeconds(mid);
+      if (midSec < t) lo = mid;
+      else hi = mid;
+    }
+    return 0.5 * (lo + hi);
+  }
+
+  return { beatsToSeconds, secondsToBeats, bpmAt };
+}
