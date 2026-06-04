@@ -1,4 +1,5 @@
 import { defineConfig } from "vitepress";
+import { withMermaid } from "vitepress-plugin-mermaid";
 
 // VitePress config for the warp-math docs site.
 //
@@ -9,7 +10,10 @@ import { defineConfig } from "vitepress";
 // markdown: { math: true } enables KaTeX so the integrals render as real
 // math, not ASCII; '$dβ/dt = BPM/60$' and the display-math `$$...$$` blocks
 // in the chapter pages are typeset properly.
-export default defineConfig({
+// `withMermaid` wraps defineConfig and adds a custom Markdown fence
+// renderer for ```mermaid blocks. The diagram is rendered client-side by
+// mermaid.js after hydration, so it doesn't break SSR.
+export default withMermaid(defineConfig({
   base: "/warp-markers/",
   title: "warp-math",
   description:
@@ -53,4 +57,9 @@ export default defineConfig({
   // exclude its files from VitePress's own page discovery; they are only
   // ever included via <!--@include--> directives from the chapter pages.
   srcExclude: [".generated/**"],
-});
+
+  // Mermaid theming so diagrams match the VitePress default theme.
+  mermaid: {
+    theme: "default",
+  },
+}));
