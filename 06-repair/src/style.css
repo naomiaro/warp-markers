@@ -13,6 +13,15 @@
 
 * { box-sizing: border-box; }
 
+.back-link {
+  display: inline-block;
+  font-size: 0.85rem;
+  color: var(--accent);
+  text-decoration: none;
+  margin-bottom: 0.5rem;
+}
+.back-link:hover { text-decoration: underline; }
+
 body {
   font-family: ui-serif, Georgia, "Times New Roman", serif;
   color: var(--ink);

@@ -7,6 +7,12 @@
     <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
+    <a class="back-link" href="/warp-markers/04-meter">&larr; back to chapter</a>
+    <script>
+      if (!location.pathname.startsWith("/warp-markers/")) {
+        document.querySelector(".back-link")?.remove();
+      }
+    </script>
     <header>
       <h1>warp-math · meter is not tempo</h1>
       <p class="lede">

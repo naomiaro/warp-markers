@@ -7,6 +7,14 @@
     <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
+    <a class="back-link" href="/warp-markers/02-visualising">&larr; back to chapter</a>
+    <script>
+      // Show the back-link only when hosted under the docs site. Locally
+      // (npm run dev) the chapter page doesn't exist, so the link would 404.
+      if (!location.pathname.startsWith("/warp-markers/")) {
+        document.querySelector(".back-link")?.remove();
+      }
+    </script>
     <header>
       <h1>warp-math · the integral, made visible</h1>
       <p class="lede">
