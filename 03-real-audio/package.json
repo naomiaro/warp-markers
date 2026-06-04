@@ -10,7 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@warp-math/the-math": "*"
+    "@warp-math/the-math": "*",
+    "@warp-math/beats-io": "*"
   },
   "devDependencies": {
     "vite": "^5.4.0"

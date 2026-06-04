@@ -1,0 +1,14 @@
+{
+  "name": "@warp-math/beats-io",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./beats-io.js",
+  "description": "beat_this .beats TSV: parser + writer, shared between chapters that read or emit the format.",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.0"
+  }
+}

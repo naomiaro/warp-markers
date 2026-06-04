@@ -11,6 +11,8 @@
     "03-real-audio",
     "04-meter",
     "05-messy-data",
+    "shared-beats-io",
+    "06-repair",
     "docs"
   ],
   "scripts": {

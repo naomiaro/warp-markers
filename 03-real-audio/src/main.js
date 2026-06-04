@@ -6,7 +6,7 @@
 // the timeline drawer. Everything that knows about tempo or warp markers
 // flows through 01-the-math via grid.js.
 // ===========================================================================
-import { parseBeats } from "./beats-parser.js";
+import { parseBeats } from "@warp-math/beats-io";
 import { buildGrid, audioSecToBeat, beatToAudioSec } from "./grid.js";
 import { createEngine } from "./audio-engine.js";
 import { drawTimeline } from "./timeline.js";
