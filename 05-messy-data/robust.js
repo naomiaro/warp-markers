@@ -1,3 +1,4 @@
+// <doc id="messy-intro">
 // ===========================================================================
 // robust.js -- when the data is messy
 //
@@ -16,6 +17,7 @@
 // All functions operate on the same `markers` shape as 01-the-math:
 //   [{ beat: 0, second: 0 }, { beat: 1, second: 0.5 }, ...]
 // ===========================================================================
+// </doc>
 import { segmentBpm } from "@warp-math/the-math/tempo-map.js";
 
 

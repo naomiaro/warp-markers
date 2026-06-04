@@ -1,3 +1,4 @@
+// <doc id="meter-intro">
 // ===========================================================================
 // meter.js — the meter layer. No calculus. Integer division and modulo only.
 //
@@ -10,6 +11,7 @@
 //   [{ fromBeat: 0, beatsPerBar: 4 }, { fromBeat: 32, beatsPerBar: 3 }]
 // fromBeat values must be downbeats (a meter change can only begin on a bar).
 // ===========================================================================
+// </doc>
 
 // Which meter segment governs a given (zero-based) beat index.
 function segmentFor(meterMap, beatIndex) {

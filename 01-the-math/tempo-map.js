@@ -1,3 +1,4 @@
+// <doc id="one-idea">
 // ===========================================================================
 // tempo-map.js
 //
@@ -29,8 +30,10 @@
 // A marker PINS a musical beat to an audio second. Tempo is never stored;
 // it is DERIVED from the gap between two markers (see segmentBpm below).
 // ===========================================================================
+// </doc>
 
 
+// <doc id="round-trip">
 // ===========================================================================
 // THE ROUND TRIP: BPM IS THE DERIVATIVE OF t(beta)
 //
@@ -52,6 +55,7 @@
 // agrees with bpmAt for every regime -- the explicit proof that the
 // integral and the derivative are two views of the same object.
 // ===========================================================================
+// </doc>
 
 
 // ---------------------------------------------------------------------------
@@ -70,6 +74,7 @@ export function segmentBpm(a, b) {
 }
 
 
+// <doc id="regime-constant">
 // ===========================================================================
 // REGIME 1: CONSTANT TEMPO
 //
@@ -84,6 +89,7 @@ export function segmentBpm(a, b) {
 // The warp map is a straight line through the origin with slope 60/K seconds
 // per beat. Nothing curves. We expose it as a model with a single tempo.
 // ===========================================================================
+// </doc>
 export function constantMap(bpm) {
   const secPerBeat = 60 / bpm;
   return {
@@ -95,6 +101,7 @@ export function constantMap(bpm) {
 }
 
 
+// <doc id="regime-piecewise">
 // ===========================================================================
 // REGIME 2: PIECEWISE-CONSTANT TEMPO  (this is what beat_this gives you)
 //
@@ -113,6 +120,7 @@ export function constantMap(bpm) {
 // Geometrically the warp map is piecewise-LINEAR: straight inside each
 // segment, with a kink at every marker where the slope (tempo) changes.
 // ===========================================================================
+// </doc>
 export function piecewiseConstantMap(markers) {
   const m = [...markers].sort((p, q) => p.beat - q.beat);
   if (m[0].beat !== 0 || m[0].second !== 0) {
@@ -169,6 +177,7 @@ export function piecewiseConstantMap(markers) {
 }
 
 
+// <doc id="regime-ramp">
 // ===========================================================================
 // REGIME 3: LINEAR TEMPO RAMP  (an accelerando -- the surprising one)
 //
@@ -199,6 +208,7 @@ export function piecewiseConstantMap(markers) {
 // Edge case: if b0 == b1 there's no ramp (s = 0), the 1/(p+qx) rule doesn't
 // apply (you'd divide by zero), and you fall back to the constant rule.
 // ===========================================================================
+// </doc>
 export function linearRampMap(startBpm, endBpm, lengthBeats) {
   const s = (endBpm - startBpm) / lengthBeats; // tempo slope, BPM per beat
 
@@ -225,6 +235,7 @@ export function linearRampMap(startBpm, endBpm, lengthBeats) {
 }
 
 
+// <doc id="regime-curved">
 // ===========================================================================
 // REGIME 4: CURVED TEMPO  (ease in / ease out -- the one without a formula)
 //
@@ -278,6 +289,7 @@ export function linearRampMap(startBpm, endBpm, lengthBeats) {
 //     under tolerance. Monotonicity is what makes this safe -- without it,
 //     bisection could converge to the wrong root.
 // ===========================================================================
+// </doc>
 export function curvedMap(startBpm, endBpm, lengthBeats, k = 2) {
   if (k <= 0) throw new Error("curvedMap requires k > 0");
   if (lengthBeats <= 0) throw new Error("curvedMap requires lengthBeats > 0");

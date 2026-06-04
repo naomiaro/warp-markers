@@ -1,3 +1,4 @@
+// <doc id="warp-marker-intro">
 // ===========================================================================
 // warp-marker.js
 //
@@ -13,6 +14,7 @@
 // touching it, and (because the map is cumulative) shifts every beat after it
 // in absolute seconds. Pinning is local; drift is global.
 // ===========================================================================
+// </doc>
 
 import { segmentBpm } from "./tempo-map.js";
 
