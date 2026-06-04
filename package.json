@@ -9,7 +9,8 @@
     "01-the-math",
     "02-visualise",
     "03-real-audio",
-    "04-meter"
+    "04-meter",
+    "05-messy-data"
   ],
   "scripts": {
     "test": "npm run test --workspaces --if-present",
