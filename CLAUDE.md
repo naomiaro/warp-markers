@@ -16,6 +16,7 @@ docs              @warp-math/docs           VitePress + KaTeX math + Vue demos t
 ```
 
 ## Working agreements (recurring across briefs)
+- **Always update this CLAUDE.md when you learn something non-obvious** about the repo, toolchain, or a gotcha that bit you. Future Claude shouldn't have to rediscover it.
 - **Never alter derivation comments in `01-the-math`.** The math comments ARE the teaching content; add new ones, don't rewrite.
 - **No `@dawcore/*` or `@waveform-playlist/*` dependencies.** Plain Web Audio only.
 - **Demos in docs import chapter math from workspace packages**, never a copy. Zero drift is the constraint.
@@ -41,6 +42,7 @@ docs              @warp-math/docs           VitePress + KaTeX math + Vue demos t
 - **`Read` tool can't open PNGs > 2000px tall.** Full-page screenshots → `type: "jpeg"`.
 - **Mermaid's diagram font renders Greek letters poorly** (β looks like B at default size). Use plain-English node names with line-break subtitles, not math glyphs in node/edge labels. Math symbols stay in body text where KaTeX typesets them.
 - **Mermaid edge labels clip on the right when the diagram is downscaled** (default `htmlLabels: true` uses `<foreignObject>` HTML, which doesn't scale with the SVG viewBox). Set `flowchart: { htmlLabels: false }` in the mermaid config so labels are `<text>`/`<tspan>` and scale uniformly. Cost: HTML tags (`<br/>`, `<b>`, `<i>`) no longer render in labels — use `\n` for line breaks, single-word first-line for emphasis.
+- **Mermaid renders once per page; it does NOT re-render on VitePress's light/dark toggle.** Don't hard-code colors in `classDef`/`linkStyle` — they become invisible in the other mode. Drive all colors via CSS in `docs/.vitepress/theme/custom.css` using VitePress CSS vars (`--vp-c-bg-soft`, `--vp-c-text-1`, `--vp-c-brand-1`, `--vp-c-text-3`). Same pattern applies to any other "render-once" content (KaTeX, manually-styled SVGs) — use VitePress CSS vars, not literal hex.
 - **Static math figures via Chart.js polygons:** rectangle/trapezoid under a curve = one dataset per polygon with `fill:true` and a `(xL,0) → (xL,y) → (xR,y) → (xR,0)` point sequence. See `docs/components/RiemannRectangles.vue` / `TrapezoidSlices.vue` for the pattern.
 - **Existing chapter demos use Chart.js + plain JS.** Stay on that toolchain; do not introduce React, Tailwind, etc.
 
