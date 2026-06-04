@@ -72,7 +72,9 @@ export function drawTimeline(canvas, { grid, durationSec, currentAudioSec }) {
       ctx.fillStyle = COLOR.axisText;
       ctx.font = "11px ui-monospace, monospace";
       const barNumber = (beat - grid.pickupBeats) / 4 + 1;
-      ctx.fillText(`bar ${barNumber}`, x + 3, cssH * 0.13);
+      // Just the number (no "bar " prefix) -- when beats are close together
+      // the longer label overlaps the next downbeat's tick.
+      ctx.fillText(String(barNumber), x + 3, cssH * 0.13);
     }
   }
 
