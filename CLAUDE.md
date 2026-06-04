@@ -17,6 +17,7 @@ docs              @warp-math/docs           VitePress + KaTeX math + Vue demos t
 
 ## Working agreements (recurring across briefs)
 - **Always update this CLAUDE.md when you learn something non-obvious** about the repo, toolchain, or a gotcha that bit you. Future Claude shouldn't have to rediscover it.
+- **Three number systems coexist; don't conflate them.** (1) **Array index** — 0-based, JS convention, used to access `markers[]`. (2) **`.beat` field / beat number** — 1-based, matches `beat_this`'s convention that beat maps never have a beat 0. (3) **β** — continuous integration variable, `β = 0` is the integration anchor before any beat. `barPositionOf` accepts a 0-based `beatIndex` but returns 1-based `bar` and `positionInBar`. The first marker is `{beat: 1, second: t_first}` with no `{0,0}` sentinel; the math layer's implicit lead-in segment handles the gap from (0,0) to the first marker.
 - **Never alter derivation comments in `01-the-math`.** The math comments ARE the teaching content; add new ones, don't rewrite.
 - **No `@dawcore/*` or `@waveform-playlist/*` dependencies.** Plain Web Audio only.
 - **Demos in docs import chapter math from workspace packages**, never a copy. Zero drift is the constraint.
