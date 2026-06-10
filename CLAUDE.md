@@ -1,10 +1,13 @@
 # warp-math — context for Claude Code
 
 ## What this repo is
-An educational walkthrough of tempo-map / warp-marker math: pure functions, an
-integral made visible, the same math driving Web Audio, the meter layer as a
-separate concern, and an anomaly-detection chapter for real beat-tracker data.
-Twelve npm workspaces; chapters are read in order.
+An educational walkthrough of tempo-map / warp-marker math, complete at ten
+chapters + an appendix (`docs/in-the-wild.md`): the integral and its regimes,
+visualization, real audio, meter, messy data and repair, the PPQN grid, and
+the warp triptych (bend the sound / bend the grid / bend neither) — with
+chapters 08 and 10 proving the tutorial math equivalent to the maintainer's
+production `@dawcore/transport` TempoMap/MeterMap. Twelve npm workspaces;
+read in order.
 
 ```
 01-the-math       @warp-math/the-math       integral + 4 BPM regimes (closed-form ×3, numerical ×1) + pin()
@@ -32,7 +35,7 @@ docs              @warp-math/docs           VitePress + KaTeX math + Vue demos t
 ## Tests
 - `npm test` at the repo root runs all workspaces (Vitest). Last known: 21 + 8 + 8 + 5 + 11 + 15 + 21 + 21 + 21 = 131 green.
 - **Known defects in the real beat-map samples** (repaired per issue #10): `otherside.beats` row 56 is a ghost beat (0.100 s gap; the "5/4 bar" is tracker noise, not a meter change — don't cite it as a true meter-change fixture), and `scar_tissue.beats` ends with a phantom 1-beat bar (final beat mislabeled beatInBar=1). `bastard.beats` (Ben Folds) is the GENUINE mixed-meter fixture — 73 meter regions, bars of 1–7 beats, clean beat times — though its many 1/4 bars are partly tracker phase noise. The repair pipeline (ch05 detect → ch06 localize/repair → beats-io export → ch08 conform) lives in `08-grid-follows-file/repair-pipeline.test.js`; `otherside-repaired.beats` is its byte-for-byte output and a regeneration guard asserts that.
-- Planned chapters and deferred follow-ups are GitHub issues (`gh issue list`) — currently #8 meter-change chapter (needs a genuine 3/4↔4/4 fixture), #9 pitch-preserving time-stretch, #10 meter-layer repair on real data. Check before proposing new chapter work.
+- Planned chapters and deferred follow-ups are GitHub issues (`gh issue list`) — check before proposing new chapter work. (#8 meter changes, #9 time-stretch, #10 meter repair are all CLOSED — shipped as chapters 10, 09, and the ch06 relabel/pipeline work respectively.)
 - **Chapter 08's tests import `@dawcore/transport` (published npm dist) in Node** — its `TempoMap` is pure (no AudioContext at construction), so the three-way equivalence tests (chapter-01 map ↔ chapter-08 reference ↔ production TempoMap) run headless without mocks.
 - **Set `editor.bpm` BEFORE installing tempo events** — the setter forwards to `engine.setTempo`, which writes the adapter's tempo map at tick 0; assigning it after overwrites the tick-0 entry with the median BPM and shifts every beat by a constant offset (wfp#406 measured 97 ms).
 - **Never hand-animate `daw-playhead`** — the editor drives it through the `secondsToTicks` bridge *with latency compensation*; manual `startBeatsAnimationWithMap` wiring undoes it.
@@ -74,4 +77,6 @@ docs              @warp-math/docs           VitePress + KaTeX math + Vue demos t
 - Run a chapter's dev server in isolation: `cd <chapter> && npx vite --port 51XX --open=false` (use a unique port; old processes linger as background jobs).
 - Preview built docs: `cd docs && npx vitepress preview . --port 5184`.
 - Re-run the derivation extractor without a full docs build: `node docs/scripts/extract-derivations.mjs`.
-- Handoff briefs (`HANDOFF*.md`) are sometimes untracked. After execution, delete with `rm`; if tracked, `git rm` first.
+- Handoff briefs (`HANDOFF*.md`) are untracked; delete after execution. **The chapter-handoff pattern is proven (07, 09, 10 — zero test failures):** chat writes pure math + tests against a brief that specs exact APIs, house conventions, and precomputed worked numbers; in-repo work does integration, demos, real-file tests, and wiring. Published `@dawcore/*` packages are pure enough for chat to import in its own equivalence tests.
+- **New chapter wiring (six places):** root `workspaces` array; extractor `SOURCES` (+ `RULE_LINKS` for new `RULE (...)` names); the Chapters nav dropdown; the sidebar; the home-page card grid in `docs/index.md`; `build-chapter-demos.mjs` `CHAPTERS` if it ships an app. Chapter links live in the dropdown — the flat top bar was retired at ten chapters.
+- **Never commit audio files.** `.beats` maps only; the audio they describe lives in the waveform-playlist beat-demos folder (path in CLAUDE.local.md). `Bastard.wav`-style files at the repo root are working copies, not repo content.
