@@ -1,5 +1,8 @@
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { describe, it, expect } from "vitest";
-import { TempoMap } from "@dawcore/transport";
+import { TempoMap, MeterMap } from "@dawcore/transport";
+import { parseBeats } from "@warp-math/beats-io";
 import { piecewiseConstantMap } from "@warp-math/the-math/tempo-map.js";
 import {
   tempoEventsFromMarkers,
@@ -188,6 +191,81 @@ describe("equivalence: chapter-01 math == @dawcore/transport TempoMap", () => {
     const plan = gridPlanFromBeats(parsed, PPQN, 4);
     expect(plan.pickupBeats).toBe(0);
     expect(plan.firstBeatTick).toBe(0);
+  });
+
+  it("meter comes from the file's downbeats: an irregular 5-beat bar becomes 5/4", () => {
+    // 1-beat pickup, then bars of 4, 4, 5, 4 beats (the lone 5-beat bar
+    // is the shape real trackers emit). Index arithmetic would put every
+    // downbeat after the 5-bar one beat off; the declared beatInBar
+    // column must win.
+    const beatInBars = [4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 5, 1, 2, 3, 4, 1];
+    const parsed = beatInBars.map((b, i) => ({
+      second: 0.25 + i * 0.5,
+      beatInBar: b,
+    }));
+    const plan = gridPlanFromBeats(parsed, PPQN);
+
+    expect(plan.pickupBeats).toBe(1);
+    // Meter entries: 4/4 from tick 0, 5/4 at the irregular bar's
+    // downbeat, back to 4/4 at the next.
+    const down5Idx = 9; // index of the downbeat opening the 5-beat bar
+    const down4Idx = 14; // the downbeat after it
+    expect(plan.meterEntries).toEqual([
+      { tick: 0, numerator: 4, denominator: 4 },
+      { tick: plan.firstBeatTick + down5Idx * PPQN, numerator: 5, denominator: 4 },
+      { tick: plan.firstBeatTick + down4Idx * PPQN, numerator: 4, denominator: 4 },
+    ]);
+
+    // THE USER-FACING CLAIM, through the production MeterMap: every
+    // declared downbeat tick is a bar boundary, none of the others are.
+    const meterMap = new MeterMap(PPQN, 4, 4);
+    for (const m of plan.meterEntries) {
+      meterMap.setMeter(m.numerator, m.denominator, m.tick);
+    }
+    parsed.forEach((b, i) => {
+      const tick = plan.firstBeatTick + i * PPQN;
+      expect(meterMap.isBarBoundary(tick), `beat index ${i}`).toBe(
+        b.beatInBar === 1
+      );
+    });
+  });
+
+  it("real tracker output (otherside.beats): every declared downbeat is a bar boundary", () => {
+    // The regression that motivated meter derivation: this 512-beat real
+    // file has a 1-beat pickup and one 5-beat bar around t = 30 s. With
+    // index-based 4/4, 455 of 512 rows end up misclassified and every
+    // downbeat after 30 s drifts off the bar lines.
+    const text = readFileSync(
+      fileURLToPath(new URL("./public/samples/otherside.beats", import.meta.url)),
+      "utf8"
+    );
+    const parsed = parseBeats(text);
+    const plan = gridPlanFromBeats(parsed, PPQN);
+
+    expect(plan.pickupBeats).toBe(1);
+    expect(plan.meterEntries.length).toBeGreaterThan(1); // the 5/4 bar
+    const meterMap = new MeterMap(PPQN, 4, 4);
+    for (const m of plan.meterEntries) {
+      meterMap.setMeter(m.numerator, m.denominator, m.tick);
+    }
+    parsed.forEach((b, i) => {
+      const tick = plan.firstBeatTick + i * PPQN;
+      expect(meterMap.isBarBoundary(tick), `beat index ${i} (t=${b.second})`).toBe(
+        b.beatInBar === 1
+      );
+    });
+
+    // And the tempo side still holds on real data: the production
+    // TempoMap reproduces all 512 timestamps.
+    const tempoMap = new TempoMap(PPQN, plan.events[0].bpm);
+    for (const e of plan.events) tempoMap.setTempo(e.bpm, e.tick);
+    for (const m of plan.markers) {
+      const tick = plan.firstBeatTick + (m.beat - 1) * PPQN;
+      expect(tempoMap.ticksToSeconds(tick)).toBeCloseTo(
+        plan.clipStartSec + m.second,
+        9
+      );
+    }
   });
 
   it("round trips: secondsToTicks inverts ticksToSeconds across tempo changes", () => {

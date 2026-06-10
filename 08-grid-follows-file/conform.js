@@ -60,13 +60,25 @@
 // With no pickup, firstBeatTick = 0 and this degenerates to the plain
 // clip offset: trim t_first, beat 1 at tick 0.
 //
+// And the bars themselves come from the FILE, not from an assumption.
+// Real tracker output contains irregular bars -- a lone 5-beat bar in
+// the middle of a 4/4 song is common -- so counting "every 4th beat is
+// a downbeat" drifts one beat off at the first irregularity and stays
+// wrong forever after. The declared beatInBar column is authoritative:
+// each run of equal bar lengths becomes one meter entry (5 beats = one
+// bar of 5/4, then back), each entry placed at its downbeat's tick.
+// That is the meter layer of chapter 04, feeding the transport's
+// MeterMap instead of barPositionOf.
+//
 // RULE (grid conformity): tempoMap.ticksToSeconds(firstBeatTick + (n-1) * PPQN) = clipStartSec + m[n].second
 //
 // That rule is the whole chapter: the production transport's clock,
 // evaluated at beat n's tick, must reproduce the beat tracker's
 // timestamp shifted by where the clip sits -- through chapter-01 math
 // on one side and @dawcore/transport's TempoMap on the other. The
-// tests assert both, with and without pickups.
+// tests assert both, with and without pickups -- and assert the meter
+// side too: every declared downbeat tick must satisfy
+// MeterMap.isBarBoundary.
 // </doc>
 import { segmentBpm } from "@warp-math/the-math/tempo-map.js";
 
@@ -144,9 +156,25 @@ export function gridPlanFromBeats(parsedBeats, ppqn, beatsPerBar = 4) {
   // Validates monotonicity and computes the tick-0-anchored events.
   const base = tempoEventsFromMarkers(markers, ppqn);
 
-  const firstDownbeatIdx = parsedBeats.findIndex((b) => b.beatInBar === 1);
-  const pickupBeats = firstDownbeatIdx < 0 ? 0 : firstDownbeatIdx;
-  const ticksPerBar = beatsPerBar * ppqn;
+  // The file's own downbeats define the bars -- do NOT assume a uniform
+  // beatsPerBar cycle by index. Real tracker output contains irregular
+  // bars (a 5-beat bar in the middle of a 4/4 song); index arithmetic
+  // would put every downbeat after it one beat off the bar lines.
+  const downIndices = [];
+  parsedBeats.forEach((b, i) => {
+    if (b.beatInBar === 1) downIndices.push(i);
+  });
+  const barLens = [];
+  for (let k = 0; k < downIndices.length - 1; k++) {
+    barLens.push(downIndices[k + 1] - downIndices[k]);
+  }
+
+  const pickupBeats = downIndices.length === 0 ? 0 : downIndices[0];
+  // The lead-in / pickup bar uses the FIRST declared bar's meter (falling
+  // back to the beatsPerBar default when the file declares fewer than two
+  // downbeats and no bar length is measurable).
+  const leadMeter = barLens[0] ?? beatsPerBar;
+  const ticksPerBar = leadMeter * ppqn;
   // Full bars, always: the first downbeat goes on the first bar
   // boundary with room for the pickup before it.
   const firstDownbeatTick =
@@ -154,6 +182,22 @@ export function gridPlanFromBeats(parsedBeats, ppqn, beatsPerBar = 4) {
       ? 0
       : ticksPerBar * Math.ceil((pickupBeats * ppqn) / ticksPerBar);
   const firstBeatTick = firstDownbeatTick - pickupBeats * ppqn;
+
+  // Meter entries: the declared bar lengths as a meter map, one entry per
+  // CHANGE (a lone 5-beat bar becomes 5/4 for one bar, then back). Each
+  // entry's tick is its downbeat's tick, which by construction is the
+  // previous bar's end -- a legal bar boundary. This is what keeps every
+  // declared downbeat on a bar line.
+  const meterEntries = [{ tick: 0, numerator: leadMeter, denominator: 4 }];
+  for (let k = 1; k < barLens.length; k++) {
+    if (barLens[k] !== barLens[k - 1]) {
+      meterEntries.push({
+        tick: firstBeatTick + downIndices[k] * ppqn,
+        numerator: barLens[k],
+        denominator: 4,
+      });
+    }
+  }
 
   const bpm1 = base.events[0].bpm;
   const events = [];
@@ -172,8 +216,9 @@ export function gridPlanFromBeats(parsedBeats, ppqn, beatsPerBar = 4) {
   return {
     markers,
     events,
+    meterEntries,
+    downbeatIndices: downIndices,
     pickupBeats,
-    beatsPerBar,
     ticksPerBar,
     firstBeatTick,
     firstDownbeatTick,
