@@ -38,9 +38,27 @@ editor.adapter = adapter;
 
 // Bootstrap the engine before any track exists so adapter.transport is
 // available for tempo/metronome work (the production example's pattern).
-await editor.ready();
-const transport = adapter.transport;
-transport.setMetronomeEnabled(true);
+//
+// IMPORTANT: this must NOT be a top-level await. ready() dynamically
+// imports @waveform-playlist/engine; under Vite's production chunking the
+// engine chunk statically imports shared helpers back from THIS entry
+// chunk, and ESM evaluation deadlocks if this module is still suspended
+// at a top-level await -- silently: no error, pending promise, dead UI.
+// (Dev mode has no such chunk cycle, which is why it only broke in
+// builds.) Bootstrapping inside an async function lets the entry module
+// finish evaluating first, dissolving the cycle.
+let transport = null;
+
+async function init() {
+  await editor.ready();
+  transport = adapter.transport;
+  transport.setMetronomeEnabled(true);
+}
+
+const initPromise = init();
+initPromise.catch((err) => {
+  $("beats-status").textContent = `engine failed to start: ${err.message}`;
+});
 
 const state = {
   plan: null, // gridPlanFromBeats() result
@@ -56,6 +74,7 @@ const state = {
 // you see are the production map's opinion, not a re-derivation.
 // ---------------------------------------------------------------------------
 function applyTempoMap() {
+  if (!transport) return; // engine still bootstrapping
   transport.stop();
   transport.clearTempos();
   transport.clearMeters();
@@ -117,6 +136,7 @@ function repositionClip() {
 // ---------------------------------------------------------------------------
 async function loadBeatsFromText(text, sourceLabel) {
   try {
+    await initPromise;
     const parsed = parseBeats(text);
     const plan = gridPlanFromBeats(parsed, PPQN);
     state.plan = plan;
@@ -162,6 +182,7 @@ $("audio-input").addEventListener("change", async (e) => {
   if (!file) return;
   $("audio-status").textContent = `decoding ${file.name}…`;
   try {
+    await initPromise;
     const result = await editor.loadFiles([file]);
     if (!result.loaded.length) throw new Error(result.failed?.[0]?.error ?? "load failed");
     state.audioLoaded = true;
@@ -195,6 +216,7 @@ function playheadEl() {
   return editor.shadowRoot?.querySelector("daw-playhead");
 }
 editor.addEventListener("daw-play", () => {
+  if (!transport) return;
   playheadEl()?.startBeatsAnimationWithMap(
     () => transport.getCurrentTime(),
     (s) => transport.timeToTick(s),
@@ -202,6 +224,7 @@ editor.addEventListener("daw-play", () => {
   );
 });
 const stopPlayhead = () => {
+  if (!transport) return;
   playheadEl()?.stopBeatsAnimationWithMap(
     transport.getCurrentTime(),
     (s) => transport.timeToTick(s),
@@ -215,7 +238,7 @@ editor.addEventListener("daw-stop", stopPlayhead);
 // Readouts: bar.beat position and the tempo in force, from the transport.
 // ---------------------------------------------------------------------------
 function tick() {
-  if (transport.isPlaying()) {
+  if (transport && transport.isPlaying()) {
     const time = transport.getCurrentTime();
     const tickNow = transport.timeToTick(time);
     const bar = transport.tickToBar(tickNow);
@@ -278,7 +301,14 @@ function renderEventsTable() {
   }
 }
 
-// Expose for ad-hoc inspection.
+// Expose for ad-hoc inspection. transport is a getter because it is
+// assigned asynchronously by init().
 if (typeof window !== "undefined") {
-  window.__gridFollows = { state, transport, editor };
+  window.__gridFollows = {
+    state,
+    editor,
+    get transport() {
+      return transport;
+    },
+  };
 }
