@@ -33,6 +33,9 @@ features:
   - title: 06 · Fixing a beat map by hand
     details: Where ch.02 (pin) and ch.04 (meter) finally meet. Move, delete, and insert beats against a live meter validator.
     link: /06-repair
+  - title: 07 · Ticks are fractional beats
+    details: The PPQN grid is the same beat axis in an integer costume — and warping a file onto a project grid is two maps evaluated at the same beat.
+    link: /07-ppqn-grid
 ---
 
 ## The one idea
