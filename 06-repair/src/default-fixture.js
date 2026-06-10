@@ -25,7 +25,7 @@ export function defaultFixture() {
   const downbeatIndices = [0, 4, 8, 12];
 
   // Error 1: extra beat near the second beat of bar 2.
-  // Insert at t = 4.5 + 0.25 = 4.75. Bar 2 (indices 4..7) becomes
+  // Insert at t = 2.5 + 0.25 = 2.75. Bar 2 (indices 4..7) becomes
   // 4..8, five beats. Downstream downbeats shift.
   markers.splice(6, 0, { second: 2.75 });
 
