@@ -36,6 +36,7 @@ const CHAPTERS = [
   "06-repair",
   "07-ppqn-grid",
   "08-grid-follows-file",
+  "09-time-stretch",
 ];
 
 if (!existsSync(publicDir)) mkdirSync(publicDir, { recursive: true });

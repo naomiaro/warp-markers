@@ -199,6 +199,11 @@ $("use-scartissue-beats").addEventListener("click", async () => {
   await loadBeatsFromText(await res.text(), "scar_tissue.beats");
 });
 
+$("use-bastard-beats").addEventListener("click", async () => {
+  const res = await fetch(`${import.meta.env.BASE_URL}samples/bastard.beats`);
+  await loadBeatsFromText(await res.text(), "bastard.beats");
+});
+
 // ---------------------------------------------------------------------------
 // Audio loading -- through the editor, so the waveform renders.
 // ---------------------------------------------------------------------------

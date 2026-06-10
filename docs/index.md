@@ -39,6 +39,9 @@ features:
   - title: 08 · The grid follows the file
     details: The inverse warp, with zero sound change — the beat map becomes the project tempo map, proven equivalent against a production transport.
     link: /08-grid-follows-file
+  - title: 09 · Stretching time without bending pitch
+    details: Granular overlap-add consumes the SAME per-segment rates chapter 07 fed to varispeed — same math, different engine, pitch untouched.
+    link: /09-time-stretch
 ---
 
 ## The one idea

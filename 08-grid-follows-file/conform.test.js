@@ -268,6 +268,44 @@ describe("equivalence: chapter-01 math == @dawcore/transport TempoMap", () => {
     }
   });
 
+  it("genuinely mixed meter (bastard.beats): 73 meter regions, every downbeat a bar boundary", () => {
+    // Ben Folds' "Bastard" -- the real mixed-meter fixture issue #8 was
+    // waiting for. 454 beats, 171 declared downbeats, bar lengths from
+    // 1 to 7 beats across 73 runs (some musical, some tracker phase
+    // noise -- both kinds are DATA, and the conform layer must honour
+    // them all). Beat TIMES are clean: no ghost gaps (min 0.34 s).
+    const text = readFileSync(
+      fileURLToPath(new URL("./public/samples/bastard.beats", import.meta.url)),
+      "utf8"
+    );
+    const parsed = parseBeats(text);
+    const plan = gridPlanFromBeats(parsed, PPQN);
+
+    expect(plan.pickupBeats).toBe(0);
+    expect(plan.meterEntries).toHaveLength(73);
+    // numerators span the declared bar lengths
+    const numerators = new Set(plan.meterEntries.map((m) => m.numerator));
+    for (const n of [1, 2, 3, 4, 5, 6, 7]) expect(numerators.has(n)).toBe(true);
+
+    const meterMap = new MeterMap(PPQN, plan.meterEntries[0].numerator, 4);
+    for (const m of plan.meterEntries) {
+      meterMap.setMeter(m.numerator, m.denominator, m.tick);
+    }
+    parsed.forEach((b, i) => {
+      const tick = plan.firstBeatTick + i * PPQN;
+      expect(meterMap.isBarBoundary(tick), `beat index ${i}`).toBe(b.beatInBar === 1);
+    });
+
+    // And the tempo side: all 454 timestamps reproduced by the
+    // production TempoMap, mixed meter notwithstanding.
+    const tempoMap = new TempoMap(PPQN, plan.events[0].bpm);
+    for (const e of plan.events) tempoMap.setTempo(e.bpm, e.tick);
+    for (const m of plan.markers) {
+      const tick = plan.firstBeatTick + (m.beat - 1) * PPQN;
+      expect(tempoMap.ticksToSeconds(tick)).toBeCloseTo(plan.clipStartSec + m.second, 9);
+    }
+  });
+
   it("round trips: secondsToTicks inverts ticksToSeconds across tempo changes", () => {
     const markers = wobbly();
     const { events } = tempoEventsFromMarkers(markers, PPQN);
