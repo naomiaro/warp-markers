@@ -1,0 +1,51 @@
+# 07 · Ticks are fractional beats
+
+Every DAW timeline question is `beatsToSeconds` in disguise. A sequencer never asks "when does this note play?" in beats or in seconds directly — it asks in **ticks**, the integer grid (PPQN: pulses per quarter note) on which every MIDI event is scheduled. This chapter shows that the tick grid adds *no new math* to [chapter 01](/01-the-integral): a tick is just a fractional beat whose denominator was agreed on in advance, so the tempo map you already have answers every grid question — including the big one, how to warp an audio file so its beats land on a project's grid.
+
+<!--@include: ./.generated/ppqn-intro.md-->
+
+## Composing with a map
+
+Once a tick names a $\beta$, the chapter-01 map does the rest. The two compositions a sequencer runs on every event:
+
+$$
+\texttt{tickToSecond} = \texttt{beatsToSeconds} \circ \texttt{betaForTick}
+\qquad
+\texttt{secondToTick} = \texttt{tickForBeta} \circ \texttt{secondsToBeats}
+$$
+
+Worked number (it appears again in the tests): PPQN 96, tick 240 gives $\beta = 240/96 + 1 = 3.5$; on `constantMap(120)` a beat lasts $0.5$ s, so the tick sounds at $0.5 \times 3.5 = 1.75$ s.
+
+## Quantize: round or floor?
+
+`secondToTick` returns a float — $1.748$ s at the settings above is tick $239.616$. Making it an integer is a policy decision, and the two obvious policies answer **different questions**:
+
+- `Math.round` asks *which tick is nearest?* That is **snapping**: a note played 4 ms early should land on the gridline it was aimed at, whether it arrived just before or just after it.
+- `Math.floor` asks *which grid cell am I in?* That is **bucketing**: a playhead readout ("bar 3, beat 2") or a per-slice event count belongs to the cell a position is *inside*, even at 99% of the way to the next tick.
+
+Both are legitimate. The module exports the snapping one, `nearestTick`, because that is what the warp workflow needs; the bucketing one is a one-character edit.
+
+## The warp rate
+
+The payoff. An audio file's beat tracker produced markers (a wobbly `piecewiseConstantMap`); the project has a rigid grid (`constantMap(projectBpm)`). Warping means time-stretching the file so file beat $n$ *sounds* at project beat $n$. Between adjacent markers the file runs at a constant `segmentBpm`, and the rate that segment must play at is the ratio of what the file supplies to what the project allots:
+
+$$
+\text{rate} \;=\; \frac{\text{source seconds per beat}}{\text{project seconds per beat}}
+\;=\; \frac{60/\text{segmentBpm}}{60/\text{projectBpm}}
+\;=\; \frac{\text{projectBpm}}{\text{segmentBpm}}
+$$
+
+A rate above 1 plays the source *faster* — the file segment was slower than the project and has to hurry to keep up.
+
+Worked example: a file with beats 1, 2, 3 found at 0.5 s, 1.1 s, 1.6 s — spacings of 0.6 s then 0.5 s, i.e. segments at 100 BPM then 120 BPM — warped onto a 120 BPM project:
+
+| Segment | File spacing | Segment BPM | Project allots | Rate |
+| ------- | ------------ | ----------- | -------------- | ---- |
+| beat 1 → 2 | 0.6 s | 100 | 0.5 s | $120/100 = 1.2$ |
+| beat 2 → 3 | 0.5 s | 120 | 0.5 s | $120/120 = 1.0$ |
+
+After warping, each segment occupies its source duration divided by its rate — $0.6/1.2 = 0.5$ s and $0.5/1.0 = 0.5$ s — exactly one project beat each, and beat $n$ lands at $n \times 60/\text{projectBpm}$ on the timeline. The wobble is erased; that is the whole job. `alignBeats` produces the marker-pairing table a DAW would persist for the warped clip, and `segmentRates` produces the per-segment rates.
+
+## What this chapter does not cover
+
+The rate is **just a number** here. Actually consuming source audio at that rate — resampling, time-stretch DSP, preserving pitch — is playback's problem, and playback belongs to chapter 03. No audio is rendered in this chapter, and nothing here knows what a sample is. The point is narrower and, hopefully, sharper: the grid a DAW lives on is the chapter-01 integral wearing an integer costume.

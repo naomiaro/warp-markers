@@ -1,0 +1,16 @@
+{
+  "name": "@warp-math/ppqn-grid",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Chapter 07 — the PPQN tick grid as fractional beats, and warping a file onto a project grid",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@warp-math/the-math": "*"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.0"
+  }
+}
