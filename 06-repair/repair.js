@@ -141,6 +141,37 @@ export function moveBeat(markers, index, newSecond) {
 
 
 // ---------------------------------------------------------------------------
+// relabelDownbeat(markers, downbeatIndices, index, isDownbeat)
+//   -> { markers, downbeatIndices }
+//
+// The FOURTH error type, discovered on real tracker output after the
+// first three were built: a beat whose TIME is perfect but whose LABEL
+// is wrong. scar_tissue.beats ends with its final beat marked
+// beatInBar=1, conjuring a phantom 1-beat bar -- no beat needs deleting,
+// inserting, or moving; the downbeat flag itself is the defect. This is
+// a pure meter-layer edit: the tempo markers pass through untouched
+// (same object, by design -- nothing in tempo space changed), and only
+// the downbeat set is rebuilt.
+//
+// Like deleteBeat's policy, no automatic judgement: relabeling one beat
+// can leave neighbouring bars odd-sized, and validateAgainstMeter will
+// say so -- deciding what to do next belongs to the user.
+// ---------------------------------------------------------------------------
+export function relabelDownbeat(markers, downbeatIndices, index, isDownbeat) {
+  if (index < 0 || index >= markers.length) {
+    throw new Error(`relabelDownbeat: index ${index} out of range`);
+  }
+  const downs = downbeatIndices || [];
+  const has = downs.includes(index);
+  if (isDownbeat === has) return { markers, downbeatIndices: downs };
+  const nextDowns = isDownbeat
+    ? [...downs, index].sort((a, b) => a - b)
+    : downs.filter((d) => d !== index);
+  return { markers, downbeatIndices: nextDowns };
+}
+
+
+// ---------------------------------------------------------------------------
 // validateAgainstMeter(markers, downbeatIndices, expectedBeatsPerBar = 4)
 //   -> Array<{ bar, beatCount, ok, fromIndex, toIndex }>
 //

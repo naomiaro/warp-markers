@@ -189,6 +189,16 @@ $("use-otherside-beats").addEventListener("click", async () => {
   await loadBeatsFromText(await res.text(), "otherside.beats");
 });
 
+$("use-repaired-beats").addEventListener("click", async () => {
+  const res = await fetch(`${import.meta.env.BASE_URL}samples/otherside-repaired.beats`);
+  await loadBeatsFromText(await res.text(), "otherside-repaired.beats");
+});
+
+$("use-scartissue-beats").addEventListener("click", async () => {
+  const res = await fetch(`${import.meta.env.BASE_URL}samples/scar_tissue.beats`);
+  await loadBeatsFromText(await res.text(), "scar_tissue.beats");
+});
+
 // ---------------------------------------------------------------------------
 // Audio loading -- through the editor, so the waveform renders.
 // ---------------------------------------------------------------------------
