@@ -4,7 +4,7 @@
 An educational walkthrough of tempo-map / warp-marker math: pure functions, an
 integral made visible, the same math driving Web Audio, the meter layer as a
 separate concern, and an anomaly-detection chapter for real beat-tracker data.
-Eight npm workspaces; chapters are read in order.
+Nine npm workspaces; chapters are read in order.
 
 ```
 01-the-math       @warp-math/the-math       integral + 4 BPM regimes (closed-form ×3, numerical ×1) + pin()
@@ -13,20 +13,21 @@ Eight npm workspaces; chapters are read in order.
 04-meter          @warp-math/meter          barPositionOf / clickForBeat — arithmetic, no calculus
 05-messy-data     @warp-math/messy-data     instantaneousBpms / flagAnomalies / monotonicityHoles
 06-repair         @warp-math/repair         insert/delete/move repairs + validateAgainstMeter editor
+07-ppqn-grid      @warp-math/ppqn-grid      tick ↔ β ↔ second + alignBeats/segmentRates (warp onto a grid)
 shared-beats-io   @warp-math/beats-io       .beats TSV parse/export + meterMapFromBeats (shared by chapters)
 docs              @warp-math/docs           VitePress + KaTeX math + Vue demos that import chapter math
 ```
 
 ## Working agreements (recurring across briefs)
 - **Always update this CLAUDE.md when you learn something non-obvious** about the repo, toolchain, or a gotcha that bit you. Future Claude shouldn't have to rediscover it.
-- **Three number systems coexist; don't conflate them.** (1) **Array index** — 0-based, JS convention, used to access `markers[]`. (2) **`.beat` field / beat number** — 1-based, matches `beat_this`'s convention that beat maps never have a beat 0. (3) **β** — continuous integration variable, `β = 0` is the integration anchor before any beat. `barPositionOf` accepts a 0-based `beatIndex` but returns 1-based `bar` and `positionInBar`. The first marker is `{beat: 1, second: t_first}` with no `{0,0}` sentinel; the math layer's implicit lead-in segment handles the gap from (0,0) to the first marker.
+- **Four number systems coexist; don't conflate them.** (1) **Array index** — 0-based, JS convention, used to access `markers[]`. (2) **`.beat` field / beat number** — 1-based, matches `beat_this`'s convention that beat maps never have a beat 0. (3) **β** — continuous integration variable, `β = 0` is the integration anchor before any beat. (4) **tick** (chapter 07) — 0-based *integer*, tick 0 anchored at beat 1 (DAW position 1.1.0), so `β = tick/PPQN + 1`; fractional ticks are rejected by design. `barPositionOf` accepts a 0-based `beatIndex` but returns 1-based `bar` and `positionInBar`. The first marker is `{beat: 1, second: t_first}` with no `{0,0}` sentinel; the math layer's implicit lead-in segment handles the gap from (0,0) to the first marker.
 - **Never alter derivation comments in `01-the-math`.** The math comments ARE the teaching content; add new ones, don't rewrite.
 - **No `@dawcore/*` or `@waveform-playlist/*` dependencies.** Plain Web Audio only.
 - **Demos in docs import chapter math from workspace packages**, never a copy. Zero drift is the constraint.
 - **Small, labelled commits per task.** Commit messages favor "why" over "what."
 
 ## Tests
-- `npm test` at the repo root runs all workspaces (Vitest). Last known: 21 + 8 + 8 + 5 + 7 = 49 green.
+- `npm test` at the repo root runs all workspaces (Vitest). Last known: 21 + 8 + 8 + 5 + 7 + 15 = 64 green.
 - Tests are worked examples: state the property in prose, then assert numerically.
 - **The canvas/demo layer is untested** — and that's exactly where index/beat conflation hides. A 0-based array index passed to `beatsToSeconds` doesn't throw (β = 0 is the legal anchor, returning second 0); it silently draws everything one beat early. The 2026-06 audit found this exact bug in three renderers that all postdated the 1-indexing refactor. When touching draw code, prefer `model[i].beat` over `i + 1` arithmetic at the call site — it stays correct if numbering ever changes again.
 

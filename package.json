@@ -13,6 +13,7 @@
     "05-messy-data",
     "shared-beats-io",
     "06-repair",
+    "07-ppqn-grid",
     "docs"
   ],
   "scripts": {
