@@ -1,0 +1,27 @@
+# example.beats -- synthetic, written by hand for testing.
+#
+# Format: <time-in-seconds> <beat-in-bar>
+#   beat-in-bar 1 = downbeat (4/4 assumed).
+# The first two rows are a PICKUP (beats 3, 4 of the bar that began before
+# our recording started). The first DOWNBEAT is on the third row.
+#
+# Tempo: constant 120 BPM (0.500 s per beat). The first beat is at 0.250 s
+# so the grid logic has a real audio offset to subtract off.
+#
+#   pickup   |       bar 1       |       bar 2       |       bar 3
+#   3   4    | 1   2   3   4     | 1   2   3   4     | 1   2   3   4
+
+0.250  3
+0.750  4
+1.250  1
+1.750  2
+2.250  3
+2.750  4
+3.250  1
+3.750  2
+4.250  3
+4.750  4
+5.250  1
+5.750  2
+6.250  3
+6.750  4

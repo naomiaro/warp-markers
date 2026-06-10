@@ -26,6 +26,7 @@ const SOURCES = [
   "05-messy-data/robust.js",
   "06-repair/repair.js",
   "07-ppqn-grid/ppqn.js",
+  "08-grid-follows-file/conform.js",
 ];
 
 const SENTINEL = /^\s*\/\/\s*<doc\s+id="([\w-]+)">\s*$([\s\S]*?)^\s*\/\/\s*<\/doc>\s*$/gm;
@@ -49,6 +50,7 @@ const RULE_LINKS = {
   "tick anchor": "https://en.wikipedia.org/wiki/Pulses_per_quarter_note",
   "warp rate":
     "https://en.wikipedia.org/wiki/Audio_time_stretching_and_pitch_scaling",
+  "grid conformity": "https://en.wikipedia.org/wiki/Tempo_map",
 };
 
 // Rules that appear as ALL-CAPS standalone markers (no `RULE (...)` wrapper).

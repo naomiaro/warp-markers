@@ -1,0 +1,23 @@
+{
+  "name": "@warp-math/grid-follows-file",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Chapter 08 — conform the project grid to the file: beat map → tempo events → @dawcore/transport, audio untouched",
+  "scripts": {
+    "test": "vitest run",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@dawcore/components": "^0.0.22",
+    "@dawcore/transport": "^0.0.10",
+    "@warp-math/beats-io": "*",
+    "@warp-math/the-math": "*"
+  },
+  "devDependencies": {
+    "vite": "^5.4.0",
+    "vitest": "^2.1.0"
+  }
+}

@@ -66,6 +66,7 @@ export default withMermaid(defineConfig({
       { text: "05 Messy data", link: "/05-messy-data" },
       { text: "06 Repair", link: "/06-repair" },
       { text: "07 PPQN grid", link: "/07-ppqn-grid" },
+      { text: "08 Grid follows file", link: "/08-grid-follows-file" },
     ],
     sidebar: [
       {
@@ -79,6 +80,7 @@ export default withMermaid(defineConfig({
           { text: "05 When the data is messy", link: "/05-messy-data" },
           { text: "06 Fixing a beat map by hand", link: "/06-repair" },
           { text: "07 Ticks are fractional beats", link: "/07-ppqn-grid" },
+          { text: "08 The grid follows the file", link: "/08-grid-follows-file" },
         ],
       },
     ],
