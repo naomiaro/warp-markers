@@ -82,8 +82,10 @@ function draw() {
   ctx.lineTo(cssW - pad, cssH * 0.7);
   ctx.stroke();
 
-  for (let i = 0; i <= N_BEATS; i++) {
-    const sec = map.beatsToSeconds(i);
+  // i is the 0-based beat index (barPositionOf convention); beatsToSeconds
+  // wants the 1-indexed beat number (i + 1). Matches the table below.
+  for (let i = 0; i < N_BEATS; i++) {
+    const sec = map.beatsToSeconds(i + 1);
     const { bar, isDownbeat } = barPositionOf(meterMap, i);
     const x = xFor(sec);
     ctx.strokeStyle = isDownbeat ? C.downbeat : C.beat;

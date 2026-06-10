@@ -85,14 +85,16 @@ export function drawTimeline(canvas, { grid, durationSec, currentAudioSec }) {
     }
   }
 
-  // Recomputed beat dots. We ask the map for beatsToSeconds(i) and put a
+  // Recomputed beat dots. We ask the map for beatsToSeconds(beat) and put a
   // small dot there. In a no-warp scenario these sit ON the tick marks.
   // The point of drawing them separately is that if we ever start warping
   // (pinning beats to new seconds in this layer too), the two will visibly
   // diverge -- showing the map's effect on top of the original data.
+  // NOTE: pass the marker's 1-indexed .beat, not the 0-based array index i
+  // -- beatsToSeconds(0) is the integration anchor (second 0), not a beat.
   ctx.fillStyle = COLOR.recomputed;
   for (let i = 0; i < grid.model.length; i++) {
-    const audioSec = beatToAudioSec(i, grid);
+    const audioSec = beatToAudioSec(grid.model[i].beat, grid);
     const x = xFor(audioSec);
     ctx.beginPath();
     ctx.arc(x, cssH * 0.5, 2.5, 0, Math.PI * 2);
@@ -103,8 +105,11 @@ export function drawTimeline(canvas, { grid, durationSec, currentAudioSec }) {
   if (grid.pickupBeats > 0) {
     ctx.fillStyle = COLOR.axisText;
     ctx.font = "italic 11px ui-serif, serif";
+    // pickupBeats counts the rows BEFORE the first downbeat, so the first
+    // downbeat itself is the marker at array index pickupBeats -- its
+    // 1-indexed beat number is model[pickupBeats].beat (= pickupBeats + 1).
     const firstDownbeatAudioSec =
-      beatToAudioSec(grid.pickupBeats, grid);
+      beatToAudioSec(grid.model[grid.pickupBeats].beat, grid);
     ctx.fillText(
       `pickup: ${grid.pickupBeats} beats →`,
       4,

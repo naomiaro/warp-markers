@@ -51,9 +51,11 @@ export function drawTimeline(canvas, { snap, currentSec, durationSec, draggedBea
   ctx.stroke();
 
   // Beat ticks. We ask the tempo layer for the second, and the meter layer
-  // for the classification. Two independent calls per beat.
-  for (let i = 0; i < snap.model[snap.model.length - 1].beat + 1; i++) {
-    const sec = snap.tempo.beatsToSeconds(i);
+  // for the classification. Two independent calls per beat. `i` is the
+  // 0-based beat index (what barPositionOf takes); the tempo layer wants the
+  // 1-indexed beat number, hence the i + 1.
+  for (let i = 0; i < snap.model[snap.model.length - 1].beat; i++) {
+    const sec = snap.tempo.beatsToSeconds(i + 1);
     const { bar, positionInBar, isDownbeat } = barPositionOf(snap.meterMap, i);
     const x = xFor(sec);
     const topY = isDownbeat ? cssH * 0.15 : cssH * 0.42;
