@@ -4,7 +4,7 @@
 An educational walkthrough of tempo-map / warp-marker math: pure functions, an
 integral made visible, the same math driving Web Audio, the meter layer as a
 separate concern, and an anomaly-detection chapter for real beat-tracker data.
-Six npm workspaces; chapters are read in order.
+Eight npm workspaces; chapters are read in order.
 
 ```
 01-the-math       @warp-math/the-math       integral + 4 BPM regimes (closed-form ×3, numerical ×1) + pin()
@@ -12,6 +12,8 @@ Six npm workspaces; chapters are read in order.
 03-real-audio     @warp-math/real-audio     beat_this .beats parser + plain Web Audio playback
 04-meter          @warp-math/meter          barPositionOf / clickForBeat — arithmetic, no calculus
 05-messy-data     @warp-math/messy-data     instantaneousBpms / flagAnomalies / monotonicityHoles
+06-repair         @warp-math/repair         insert/delete/move repairs + validateAgainstMeter editor
+shared-beats-io   @warp-math/beats-io       .beats TSV parse/export + meterMapFromBeats (shared by chapters)
 docs              @warp-math/docs           VitePress + KaTeX math + Vue demos that import chapter math
 ```
 
@@ -24,8 +26,9 @@ docs              @warp-math/docs           VitePress + KaTeX math + Vue demos t
 - **Small, labelled commits per task.** Commit messages favor "why" over "what."
 
 ## Tests
-- `npm test` at the repo root runs all workspaces (Vitest). Last known: 21 + 8 + 8 = 37 green.
+- `npm test` at the repo root runs all workspaces (Vitest). Last known: 21 + 8 + 8 + 5 + 7 = 49 green.
 - Tests are worked examples: state the property in prose, then assert numerically.
+- **The canvas/demo layer is untested** — and that's exactly where index/beat conflation hides. A 0-based array index passed to `beatsToSeconds` doesn't throw (β = 0 is the legal anchor, returning second 0); it silently draws everything one beat early. The 2026-06 audit found this exact bug in three renderers that all postdated the 1-indexing refactor. When touching draw code, prefer `model[i].beat` over `i + 1` arithmetic at the call site — it stays correct if numbering ever changes again.
 
 ## Docs build pipeline
 - `docs/scripts/extract-derivations.mjs` scans chapter `.js` for `// <doc id="...">` … `// </doc>` sentinels, strips `// ` prefixes + `===`/`---` rules, writes Markdown partials to `docs/.generated/` (gitignored). Pages include them via `<!--@include: ./.generated/<id>.md-->`. **Sentinels are the seam; do not paste comment prose into `.md`.**
