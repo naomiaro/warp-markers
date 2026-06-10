@@ -8,6 +8,7 @@ import {
   moveBeat,
   validateAgainstMeter,
   recoverDownbeats,
+  relabelDownbeat,
 } from "./repair.js";
 import { parseBeats, exportBeatsTsv } from "@warp-math/beats-io";
 
@@ -145,5 +146,38 @@ describe(".beats round-trip", () => {
       expect(Math.abs(reparsed[i].second - parsed[i].second)).toBeLessThan(1e-6);
       expect(reparsed[i].beatInBar).toBe(parsed[i].beatInBar);
     }
+  });
+});
+
+describe("relabelDownbeat (the meter-layer-only repair)", () => {
+  // A beat whose time is right but whose downbeat flag is wrong needs no
+  // tempo edit at all -- the markers pass through IDENTICALLY (same
+  // reference: nothing in tempo space changed), only the label set is
+  // rebuilt.
+  const markers = [0, 0.5, 1.0, 1.5, 2.0, 2.5].map((second) => ({ second }));
+
+  it("removes a wrong downbeat label, leaving markers untouched", () => {
+    const out = relabelDownbeat(markers, [0, 4, 5], 5, false);
+    expect(out.downbeatIndices).toEqual([0, 4]);
+    expect(out.markers).toBe(markers); // same reference: tempo space untouched
+  });
+
+  it("adds a missing downbeat label, kept sorted", () => {
+    const out = relabelDownbeat(markers, [0, 4], 2, true);
+    expect(out.downbeatIndices).toEqual([0, 2, 4]);
+  });
+
+  it("is a no-op when the label already matches, and never mutates input", () => {
+    const downs = [0, 4];
+    const out = relabelDownbeat(markers, downs, 4, true);
+    expect(out.downbeatIndices).toEqual([0, 4]);
+    expect(downs).toEqual([0, 4]);
+    const out2 = relabelDownbeat(markers, downs, 2, true);
+    expect(downs).toEqual([0, 4]); // input array not mutated
+    expect(out2.downbeatIndices).not.toBe(downs);
+  });
+
+  it("rejects an out-of-range index", () => {
+    expect(() => relabelDownbeat(markers, [0], 6, true)).toThrow(/out of range/);
   });
 });

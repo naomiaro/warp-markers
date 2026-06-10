@@ -80,6 +80,28 @@ workspace shared between chapter 03 (which reads the format to drive Web Audio
 playback) and chapter 06 (which both reads and writes). The format definition
 exists in exactly one place so the two chapters can't drift apart on it.
 
+## A real repair, end to end
+
+The chapters earn their keep on real tracker output. `otherside.beats` (512 beats, bundled with [chapter 08's demo](/08-grid-follows-file)) appears to contain a 5/4 bar around 30 s — but the gaps tell the truth:
+
+```
+idx 55  t=29.66  gap=0.540     ← on the ~0.52 s grid
+idx 56  t=29.76  gap=0.100     ← ghost beat (implied 600 BPM)
+idx 57  t=30.20  gap=0.440
+```
+
+The "5/4 bar" is a **ghost beat** — a spurious detection. Each chapter contributes exactly the piece it was built for:
+
+1. **Chapter 05 detects** — `flagAnomalies` fires `too-fast` (600 BPM, "doubled beat?") on segment 55.
+2. **This chapter localizes** — `validateAgainstMeter` names one bad bar: 5 beats, rows 53–57.
+3. **This chapter repairs** — `deleteBeat` removes the ghost. *Which* endpoint of the flagged gap is spurious is a judgement call (the flag names a gap, not a beat): pick the one whose removal best restores the local tempo — here idx 56, since 29.66 sits exactly on the grid and 29.76 doesn't.
+4. **`beats-io` exports** — `exportBeatsTsv` round-trips a clean file.
+5. **Chapter 08 proves it** — `gridPlanFromBeats` on the repaired file collapses from three meter entries to a single 4/4; the phantom 5/4 is gone. Compare the *otherside* and *otherside (repaired)* samples in [the chapter 08 demo](/08-grid-follows-file) and watch the meter-entry count change.
+
+`scar_tissue.beats` carries the other labeling defect: its final beat is marked `beatInBar=1`, conjuring a phantom 1-beat bar. No beat is wrong — only the **label** is. That repair is `relabelDownbeat`, the fourth operation: a pure meter-layer edit that passes the tempo markers through *by reference*, because nothing in tempo space changed. Chapter 05 sees nothing wrong with this file (the beat times are perfect) — the meter overlay is the only witness, which is this chapter's founding observation coming full circle.
+
+The whole pipeline runs as a worked example in `08-grid-follows-file/repair-pipeline.test.js`, and the bundled `otherside-repaired.beats` is asserted byte-for-byte to be the pipeline's own output.
+
 ## What this chapter is NOT
 
 - **No auto-repair.** The validator *shows* what's wrong; it never changes the

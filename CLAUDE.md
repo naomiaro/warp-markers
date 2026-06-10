@@ -28,8 +28,8 @@ docs              @warp-math/docs           VitePress + KaTeX math + Vue demos t
 - **Small, labelled commits per task.** Commit messages favor "why" over "what."
 
 ## Tests
-- `npm test` at the repo root runs all workspaces (Vitest). Last known: 21 + 8 + 8 + 5 + 7 + 15 + 12 = 76 green.
-- **Known defects in the real beat-map samples** (see issue #10): `otherside.beats` row 56 is a ghost beat (0.100 s gap; the "5/4 bar" is tracker noise, not a meter change — don't cite it as a true meter-change fixture), and `scar_tissue.beats` ends with a phantom 1-beat bar (final beat mislabeled beatInBar=1). Chapter 06's pipeline repairs both; chapter 08 renders them faithfully as-is.
+- `npm test` at the repo root runs all workspaces (Vitest). Last known: 21 + 8 + 8 + 5 + 11 + 15 + 20 = 88 green.
+- **Known defects in the real beat-map samples** (repaired per issue #10): `otherside.beats` row 56 is a ghost beat (0.100 s gap; the "5/4 bar" is tracker noise, not a meter change — don't cite it as a true meter-change fixture), and `scar_tissue.beats` ends with a phantom 1-beat bar (final beat mislabeled beatInBar=1). The repair pipeline (ch05 detect → ch06 localize/repair → beats-io export → ch08 conform) lives in `08-grid-follows-file/repair-pipeline.test.js`; `otherside-repaired.beats` is its byte-for-byte output and a regeneration guard asserts that.
 - Planned chapters and deferred follow-ups are GitHub issues (`gh issue list`) — currently #8 meter-change chapter (needs a genuine 3/4↔4/4 fixture), #9 pitch-preserving time-stretch, #10 meter-layer repair on real data. Check before proposing new chapter work.
 - **Chapter 08's tests import `@dawcore/transport` (published npm dist) in Node** — its `TempoMap` is pure (no AudioContext at construction), so the three-way equivalence tests (chapter-01 map ↔ chapter-08 reference ↔ production TempoMap) run headless without mocks.
 - **Set `editor.bpm` BEFORE installing tempo events** — the setter forwards to `engine.setTempo`, which writes the adapter's tempo map at tick 0; assigning it after overwrites the tick-0 entry with the median BPM and shifts every beat by a constant offset (wfp#406 measured 97 ms).
