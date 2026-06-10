@@ -16,6 +16,7 @@
     "07-ppqn-grid",
     "08-grid-follows-file",
     "09-time-stretch",
+    "10-bar-arithmetic",
     "docs"
   ],
   "scripts": {

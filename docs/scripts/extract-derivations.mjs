@@ -28,6 +28,7 @@ const SOURCES = [
   "07-ppqn-grid/ppqn.js",
   "08-grid-follows-file/conform.js",
   "09-time-stretch/granular.js",
+  "10-bar-arithmetic/bars.js",
 ];
 
 const SENTINEL = /^\s*\/\/\s*<doc\s+id="([\w-]+)">\s*$([\s\S]*?)^\s*\/\/\s*<\/doc>\s*$/gm;
@@ -53,6 +54,7 @@ const RULE_LINKS = {
     "https://en.wikipedia.org/wiki/Audio_time_stretching_and_pitch_scaling",
   "grid conformity": "https://en.wikipedia.org/wiki/Tempo_map",
   "grain advance": "https://en.wikipedia.org/wiki/Granular_synthesis",
+  "bar count": "https://en.wikipedia.org/wiki/Time_signature",
 };
 
 // Rules that appear as ALL-CAPS standalone markers (no `RULE (...)` wrapper).

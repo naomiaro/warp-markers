@@ -42,6 +42,9 @@ features:
   - title: 09 · Stretching time without bending pitch
     details: Granular overlap-add consumes the SAME per-segment rates chapter 07 fed to varispeed — same math, different engine, pitch untouched.
     link: /09-time-stretch
+  - title: 10 · Bars that change size
+    details: One cached number per meter entry makes bar numbers survive 73 meter regions — proven equivalent to the production MeterMap.
+    link: /10-bar-arithmetic
 ---
 
 ## The one idea

@@ -57,17 +57,26 @@ export default withMermaid(defineConfig({
     // ships with the bundle.
     search: { provider: "local" },
 
+    // Ten chapters no longer fit a flat top bar; the nav collapses them
+    // into one dropdown. The sidebar (below) is the persistent full ToC on
+    // every page, and the home page's card grid is the long-form contents.
     nav: [
       { text: "Home", link: "/" },
-      { text: "01 The integral", link: "/01-the-integral" },
-      { text: "02 Visualising", link: "/02-visualising" },
-      { text: "03 Real audio", link: "/03-real-audio" },
-      { text: "04 Meter", link: "/04-meter" },
-      { text: "05 Messy data", link: "/05-messy-data" },
-      { text: "06 Repair", link: "/06-repair" },
-      { text: "07 PPQN grid", link: "/07-ppqn-grid" },
-      { text: "08 Grid follows file", link: "/08-grid-follows-file" },
-      { text: "09 Time-stretch", link: "/09-time-stretch" },
+      {
+        text: "Chapters",
+        items: [
+          { text: "01 The integral", link: "/01-the-integral" },
+          { text: "02 Visualising the warp", link: "/02-visualising" },
+          { text: "03 Real audio", link: "/03-real-audio" },
+          { text: "04 Meter is not tempo", link: "/04-meter" },
+          { text: "05 When the data is messy", link: "/05-messy-data" },
+          { text: "06 Fixing a beat map by hand", link: "/06-repair" },
+          { text: "07 Ticks are fractional beats", link: "/07-ppqn-grid" },
+          { text: "08 The grid follows the file", link: "/08-grid-follows-file" },
+          { text: "09 Stretching time, keeping pitch", link: "/09-time-stretch" },
+          { text: "10 Bars that change size", link: "/10-bar-arithmetic" },
+        ],
+      },
     ],
     sidebar: [
       {
@@ -83,6 +92,7 @@ export default withMermaid(defineConfig({
           { text: "07 Ticks are fractional beats", link: "/07-ppqn-grid" },
           { text: "08 The grid follows the file", link: "/08-grid-follows-file" },
           { text: "09 Stretching time, keeping pitch", link: "/09-time-stretch" },
+          { text: "10 Bars that change size", link: "/10-bar-arithmetic" },
         ],
       },
     ],
