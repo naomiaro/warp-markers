@@ -34,6 +34,7 @@ const CHAPTERS = [
   "04-meter",
   "05-messy-data",
   "06-repair",
+  "07-ppqn-grid",
 ];
 
 if (!existsSync(publicDir)) mkdirSync(publicDir, { recursive: true });

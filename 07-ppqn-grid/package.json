@@ -5,12 +5,17 @@
   "type": "module",
   "description": "Chapter 07 — the PPQN tick grid as fractional beats, and warping a file onto a project grid",
   "scripts": {
-    "test": "vitest run"
+    "test": "vitest run",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "dependencies": {
-    "@warp-math/the-math": "*"
+    "@warp-math/the-math": "*",
+    "@warp-math/beats-io": "*"
   },
   "devDependencies": {
+    "vite": "^5.4.0",
     "vitest": "^2.1.0"
   }
 }

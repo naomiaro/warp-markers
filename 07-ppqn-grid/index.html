@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>warp-math · ppqn grid</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <a class="back-link" href="/warp-markers/07-ppqn-grid">&larr; back to chapter</a>
+    <script>
+      if (!location.pathname.startsWith("/warp-markers/")) {
+        document.querySelector(".back-link")?.remove();
+      }
+    </script>
+    <header>
+      <h1>warp-math · lining up on the grid</h1>
+      <p class="lede">
+        Hear <code>segmentRates()</code>. A metronome clicks the rigid project
+        grid while your file plays <strong>warped</strong> — one
+        <code>playbackRate</code> automation point per beat, straight from the
+        chapter's math — so its wobbly beats land exactly on the clicks.
+        Untick <em>warp</em> to hear the same file raw, drifting off the grid.
+        No audio file? A lower-pitched click stands in for the file's beats.
+      </p>
+    </header>
+
+    <section class="loaders">
+      <fieldset>
+        <legend>1. beats file (required)</legend>
+        <input type="file" id="beats-input" accept=".beats,.txt" />
+        <p class="hint">
+          Or click <button type="button" id="use-sample-beats" class="link">use the bundled sample</button>
+          (16 beats wandering 100 → 120 → 150 → 120&nbsp;BPM — rates 1.2, 1.0,
+          0.8, 1.0 against a 120&nbsp;BPM grid).
+        </p>
+        <p id="beats-status" class="status">no beats loaded</p>
+      </fieldset>
+
+      <fieldset>
+        <legend>2. audio file (optional)</legend>
+        <input type="file" id="audio-input" accept="audio/*" />
+        <p class="hint">
+          The audio the beats map describes. Without it the file's beats play
+          as a lower click — warp off, you hear two click tracks flamming;
+          warp on, they fuse into one.
+        </p>
+        <p id="audio-status" class="status">no audio loaded · stand-in click mode</p>
+      </fieldset>
+    </section>
+
+    <section class="transport">
+      <button type="button" id="play-pause">play</button>
+      <button type="button" id="rewind">rewind</button>
+      <label>
+        project BPM
+        <input type="range" id="project-bpm" min="60" max="200" value="120" />
+        <output id="ro-project-bpm">120</output>
+      </label>
+      <label><input type="checkbox" id="warp-toggle" checked /> warp</label>
+      <label><input type="checkbox" id="metronome-toggle" checked /> metronome</label>
+      <span class="readouts">
+        project clock: <output id="ro-projectsec">—</output> s ·
+        file position: <output id="ro-filesec">—</output> s ·
+        rate here: <output id="ro-rate">—</output>
+      </span>
+    </section>
+
+    <section class="timeline-wrap">
+      <canvas id="timeline"></canvas>
+    </section>
+
+    <section class="debug">
+      <details open>
+        <summary>the warp program: one row per segment, from <code>segmentRates()</code></summary>
+        <p class="hint">
+          rate = projectBpm / segmentBpm. Each segment's file duration divided
+          by its rate is exactly one project beat — that is what locks the
+          beats to the grid.
+        </p>
+        <table id="segments-table">
+          <thead><tr><th>beats</th><th>file spacing</th><th>segment BPM</th><th>project allots</th><th>rate</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </details>
+    </section>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
