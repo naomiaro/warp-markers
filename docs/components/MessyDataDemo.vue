@@ -63,7 +63,7 @@ function parse(text) {
     const line = raw.trim();
     if (!line || line.startsWith("#")) continue;
     const n = Number(line);
-    if (Number.isFinite(n)) markers.push({ beat: markers.length, second: n });
+    if (Number.isFinite(n)) markers.push({ beat: markers.length + 1, second: n });
   }
   return markers;
 }

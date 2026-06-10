@@ -13,10 +13,11 @@ import {
   monotonicityHoles,
 } from "./robust.js";
 
-// Build a clean 120 BPM marker list (0.5 s per beat) of `n` beats.
+// Build a clean 120 BPM marker list (0.5 s per beat) of `n` segments.
+// Beat numbers are 1-indexed (a beat map never has a beat 0).
 function steady120(n) {
   const m = new Array(n + 1);
-  for (let i = 0; i <= n; i++) m[i] = { beat: i, second: i * 0.5 };
+  for (let i = 0; i <= n; i++) m[i] = { beat: i + 1, second: i * 0.5 };
   return m;
 }
 
@@ -33,10 +34,10 @@ describe("instantaneousBpms (the raw signal)", () => {
     // monotonicity hole tool can find the offender. Mixing throwing into the
     // BPM computation would mask everything after the first violation.
     const m = [
-      { beat: 0, second: 0 },
-      { beat: 1, second: 0.5 },
-      { beat: 2, second: 0.4 }, // backwards
-      { beat: 3, second: 0.9 },
+      { beat: 1, second: 0 },
+      { beat: 2, second: 0.5 },
+      { beat: 3, second: 0.4 }, // backwards
+      { beat: 4, second: 0.9 },
     ];
     const bpms = instantaneousBpms(m);
     expect(Number.isNaN(bpms[1])).toBe(true);
@@ -103,11 +104,11 @@ describe("monotonicityHoles (the fatal kind)", () => {
     // chapter 01 explicitly guards against (`pin` rejects it; here we
     // detect it after the fact).
     const m = [
-      { beat: 0, second: 0 },
-      { beat: 1, second: 0.5 },
-      { beat: 2, second: 1.0 },
-      { beat: 3, second: 0.9 }, // backwards in seconds
-      { beat: 4, second: 2.0 },
+      { beat: 1, second: 0 },
+      { beat: 2, second: 0.5 },
+      { beat: 3, second: 1.0 },
+      { beat: 4, second: 0.9 }, // backwards in seconds
+      { beat: 5, second: 2.0 },
     ];
     expect(monotonicityHoles(m)).toEqual([3]);
   });
@@ -116,9 +117,9 @@ describe("monotonicityHoles (the fatal kind)", () => {
     // Less common in practice, but the math layer's contract requires both
     // axes strictly increasing. Worth flagging the same way.
     const m = [
-      { beat: 0, second: 0 },
-      { beat: 2, second: 1 },
-      { beat: 1, second: 2 }, // beat went backwards
+      { beat: 1, second: 0 },
+      { beat: 3, second: 1 },
+      { beat: 2, second: 2 }, // beat went backwards
     ];
     expect(monotonicityHoles(m)).toEqual([2]);
   });
