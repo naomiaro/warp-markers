@@ -4,7 +4,7 @@
 An educational walkthrough of tempo-map / warp-marker math: pure functions, an
 integral made visible, the same math driving Web Audio, the meter layer as a
 separate concern, and an anomaly-detection chapter for real beat-tracker data.
-Nine npm workspaces; chapters are read in order.
+Ten npm workspaces; chapters are read in order.
 
 ```
 01-the-math       @warp-math/the-math       integral + 4 BPM regimes (closed-form ×3, numerical ×1) + pin()
@@ -14,6 +14,7 @@ Nine npm workspaces; chapters are read in order.
 05-messy-data     @warp-math/messy-data     instantaneousBpms / flagAnomalies / monotonicityHoles
 06-repair         @warp-math/repair         insert/delete/move repairs + validateAgainstMeter editor
 07-ppqn-grid      @warp-math/ppqn-grid      tick ↔ β ↔ second + alignBeats/segmentRates (warp onto a grid)
+08-grid-follows-file  @warp-math/grid-follows-file  inverse warp via @dawcore/transport: beat map → tempo events, audio untouched
 shared-beats-io   @warp-math/beats-io       .beats TSV parse/export + meterMapFromBeats (shared by chapters)
 docs              @warp-math/docs           VitePress + KaTeX math + Vue demos that import chapter math
 ```
@@ -27,7 +28,10 @@ docs              @warp-math/docs           VitePress + KaTeX math + Vue demos t
 - **Small, labelled commits per task.** Commit messages favor "why" over "what."
 
 ## Tests
-- `npm test` at the repo root runs all workspaces (Vitest). Last known: 21 + 8 + 8 + 5 + 7 + 15 = 64 green.
+- `npm test` at the repo root runs all workspaces (Vitest). Last known: 21 + 8 + 8 + 5 + 7 + 15 + 7 = 71 green.
+- **Chapter 08's tests import `@dawcore/transport` (published npm dist) in Node** — its `TempoMap` is pure (no AudioContext at construction), so the three-way equivalence tests (chapter-01 map ↔ chapter-08 reference ↔ production TempoMap) run headless without mocks.
+- **Chapter 08's demo top-level-awaits `editor.ready()`** (the `@dawcore/components` engine bootstrap, same pattern as waveform-playlist's own examples) — Vite's default es2020 target rejects top-level await, so its `vite.config.js` sets `build: { target: "esnext" }`.
+- **The grid is always full bars** (maintainer rule): the first downbeat goes on a bar boundary, pickups fill the tail of the bar before it, and the empty lead-in bars run at the first segment's tempo. `gridPlanFromBeats` in chapter 08 encodes this; don't anchor file beat 1 at tick 0 when the `.beats` file declares a pickup.
 - Tests are worked examples: state the property in prose, then assert numerically.
 - **The canvas/demo layer is untested** — and that's exactly where index/beat conflation hides. A 0-based array index passed to `beatsToSeconds` doesn't throw (β = 0 is the legal anchor, returning second 0); it silently draws everything one beat early. The 2026-06 audit found this exact bug in three renderers that all postdated the 1-indexing refactor. When touching draw code, prefer `model[i].beat` over `i + 1` arithmetic at the call site — it stays correct if numbering ever changes again.
 

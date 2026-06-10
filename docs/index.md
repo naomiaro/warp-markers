@@ -36,6 +36,9 @@ features:
   - title: 07 · Ticks are fractional beats
     details: The PPQN grid is the same beat axis in an integer costume — and warping a file onto a project grid is two maps evaluated at the same beat.
     link: /07-ppqn-grid
+  - title: 08 · The grid follows the file
+    details: The inverse warp, with zero sound change — the beat map becomes the project tempo map, proven equivalent against a production transport.
+    link: /08-grid-follows-file
 ---
 
 ## The one idea

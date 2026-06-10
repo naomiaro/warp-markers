@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>warp-math · the grid follows the file</title>
+    <link rel="stylesheet" href="/src/style.css" />
+    <style>
+      daw-editor {
+        --daw-wave-color: #b8470b;
+        --daw-playhead-color: #b8470b;
+        --daw-background: #faf7f2;
+        --daw-track-background: #f3eee6;
+        --daw-ruler-color: #2a2a30;
+        --daw-ruler-background: #faf7f2;
+        --daw-grid-odd: rgba(0, 0, 0, 0.02);
+        --daw-grid-even: rgba(0, 0, 0, 0.05);
+        --daw-grid-line-color: rgba(0, 0, 0, 0.12);
+        display: block;
+        margin-bottom: 12px;
+        border: 1px solid #cdc9c1;
+      }
+    </style>
+  </head>
+  <body>
+    <a class="back-link" href="/warp-markers/08-grid-follows-file">&larr; back to chapter</a>
+    <script>
+      if (!location.pathname.startsWith("/warp-markers/")) {
+        document.querySelector(".back-link")?.remove();
+      }
+    </script>
+    <header>
+      <h1>warp-math · the grid follows the file</h1>
+      <p class="lede">
+        Chapter 07 bent the file onto the grid — and bent its sound. This
+        chapter bends the <strong>grid</strong> onto the file: the audio plays
+        raw, bit-identical, and the project's tempo map becomes the beat map.
+        Everything below — ruler, bars, waveform, metronome — is
+        <code>@dawcore/components</code> + <code>@dawcore/transport</code>,
+        whose <code>TempoMap</code> implements exactly the math of
+        chapter&nbsp;01. The grid is always <strong>full bars</strong>: a
+        pickup fills the tail of the bar before the first downbeat. Untick
+        <em>conform</em> to hear the metronome march rigidly while the file
+        drifts; tick it and the grid follows every wobble.
+      </p>
+    </header>
+
+    <section class="loaders">
+      <fieldset>
+        <legend>1. beats file (required)</legend>
+        <input type="file" id="beats-input" accept=".beats,.txt" />
+        <p class="hint">
+          Or use a bundled sample:
+          <button type="button" id="use-sample-beats" class="link">wobbly</button>
+          (16 beats wandering 100 → 150 BPM, no pickup) ·
+          <button type="button" id="use-pickup-beats" class="link">pickup</button>
+          (steady 120 BPM, 2-beat pickup — the first downbeat lands on a bar
+          line, the pickup fills the bar before it).
+        </p>
+        <p id="beats-status" class="status">no beats loaded</p>
+      </fieldset>
+
+      <fieldset>
+        <legend>2. audio file (optional)</legend>
+        <input type="file" id="audio-input" accept="audio/*" />
+        <p class="hint">
+          The audio the beats map describes. It is never time-stretched,
+          resampled, or rate-changed — in both modes you hear the identical
+          signal. Without it, the metronome alone plays the grid.
+        </p>
+        <p id="audio-status" class="status">no audio loaded · beats-only preview</p>
+      </fieldset>
+    </section>
+
+    <section class="transport">
+      <daw-transport for="editor" style="display:contents;">
+        <daw-play-button></daw-play-button>
+        <daw-pause-button></daw-pause-button>
+        <daw-stop-button></daw-stop-button>
+      </daw-transport>
+      <label><input type="checkbox" id="conform-toggle" checked /> conform grid to file</label>
+      <label>
+        rigid BPM
+        <input type="range" id="project-bpm" min="60" max="200" value="120" />
+        <output id="ro-project-bpm">120</output>
+      </label>
+      <span class="readouts">
+        <output id="ro-position">—</output> ·
+        tempo here: <output id="ro-bpm">—</output> BPM
+      </span>
+    </section>
+
+    <daw-editor id="editor" scale-mode="beats" ticks-per-pixel="24" bpm="120" snap-to="beat"
+                samples-per-pixel="1024" wave-height="80" timescale clip-headers>
+      <daw-grid></daw-grid>
+    </daw-editor>
+
+    <section class="debug">
+      <details open>
+        <summary>the conformed map: one <code>setTempo</code> per segment, with live residual proof</summary>
+        <p class="hint">
+          Each row is one tempo event fed to the production transport. The
+          residual columns check RULE (grid conformity) two ways:
+          <code>transport.tickToTime(tick) − (clipStart + beatTime)</code>
+          through <code>@dawcore/transport</code>, and the same through this
+          chapter's pure reference clock. Both should be zero to numerical
+          noise while conformed.
+        </p>
+        <table id="events-table">
+          <thead><tr><th>tick</th><th>beat</th><th>BPM</th><th>beat time (s)</th><th>residual (dawcore)</th><th>residual (reference)</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </details>
+    </section>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
