@@ -45,10 +45,11 @@ function parseInput(text) {
     }
     seconds.push(n);
   });
-  // markers: one per timestamp, beat = its index. This is the simplest
-  // mapping from "list of times" to the chapter-01 marker shape; downstream
-  // analysis cares about the gaps, not the absolute beat numbering.
-  const markers = seconds.map((s, i) => ({ beat: i, second: s }));
+  // markers: one per timestamp, beat = index + 1 (beat numbers are
+  // 1-indexed; beat maps never have a beat 0). Downstream analysis cares
+  // about the gaps, not the absolute numbering, but keeping the convention
+  // means these markers stay valid input for the chapter-01 map builders.
+  const markers = seconds.map((s, i) => ({ beat: i + 1, second: s }));
   return { markers, skipped };
 }
 
