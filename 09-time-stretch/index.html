@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>warp-math · time-stretch</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <a class="back-link" href="/warp-markers/09-time-stretch">&larr; back to chapter</a>
+    <script>
+      if (!location.pathname.startsWith("/warp-markers/")) {
+        document.querySelector(".back-link")?.remove();
+      }
+    </script>
+    <header>
+      <h1>warp-math · stretching time without bending pitch</h1>
+      <p class="lede">
+        The triptych, audible. <strong>raw</strong>: the wobbly source drifts
+        off the metronome. <strong>varispeed</strong> (chapter 07's engine):
+        beats lock, key changes. <strong>granular</strong> (this chapter):
+        beats lock, key does not — the same per-segment rates, sampled as
+        grains instead of played as tape speed. The default source is a
+        synthetic arpeggio so the pitch difference is unmissable; drop in
+        real audio + its <code>.beats</code> map for the full effect.
+      </p>
+    </header>
+
+    <section class="loaders">
+      <fieldset>
+        <legend>1. beats file (required)</legend>
+        <input type="file" id="beats-input" accept=".beats,.txt" />
+        <p class="hint">
+          Or click <button type="button" id="use-sample-beats" class="link">use the bundled sample</button>
+          (16 beats wandering 100 → 120 → 150 → 120&nbsp;BPM; rates 1.2, 1.0,
+          0.8, 1.0 against the 120&nbsp;BPM grid).
+        </p>
+        <p id="beats-status" class="status">no beats loaded</p>
+      </fieldset>
+
+      <fieldset>
+        <legend>2. audio file (optional)</legend>
+        <input type="file" id="audio-input" accept="audio/*" />
+        <p class="hint">
+          Without it, a synthetic arpeggio (one tone per file beat, C4 E4 G4
+          C5) stands in — tones, not clicks, because you cannot hear
+          varispeed detune a click.
+        </p>
+        <p id="audio-status" class="status">no audio loaded · arpeggio mode</p>
+      </fieldset>
+    </section>
+
+    <section class="transport">
+      <button type="button" id="play-pause">play</button>
+      <button type="button" id="rewind">rewind</button>
+      <label><input type="radio" name="mode" value="raw" /> raw</label>
+      <label><input type="radio" name="mode" value="varispeed" /> varispeed</label>
+      <label><input type="radio" name="mode" value="granular" checked /> granular</label>
+      <label><input type="checkbox" id="metronome-toggle" checked /> metronome</label>
+      <label>
+        grain
+        <input type="range" id="grain-sec" min="30" max="200" value="80" />
+        <output id="ro-grain">80 ms</output>
+      </label>
+      <label>
+        overlap
+        <input type="range" id="overlap" min="20" max="80" value="50" />
+        <output id="ro-overlap">50%</output>
+      </label>
+      <span class="readouts">
+        output: <output id="ro-outsec">—</output> s ·
+        source s(p): <output id="ro-srcsec">—</output> s
+      </span>
+    </section>
+
+    <section class="timeline-wrap">
+      <canvas id="timeline"></canvas>
+    </section>
+
+    <section class="debug">
+      <details open>
+        <summary>the grain schedule: <code>grainSchedule()</code>, first rows from output 0.5 s</summary>
+        <p class="hint">
+          The source-delta column is RULE (grain advance) live:
+          consecutive grains advance the source by
+          <code>outputHop × rate</code> — the last column recovers the local
+          rate. Shrink the grain to hear warble, grow it to hear smearing;
+          at 50% overlap the Hann windows sum to exactly 1 (COLA).
+        </p>
+        <table id="grain-table">
+          <thead><tr><th>outputSec</th><th>sourceSec = s(p)</th><th>Δsource</th><th>Δsource / hop = rate</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </details>
+    </section>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

@@ -67,6 +67,7 @@ export default withMermaid(defineConfig({
       { text: "06 Repair", link: "/06-repair" },
       { text: "07 PPQN grid", link: "/07-ppqn-grid" },
       { text: "08 Grid follows file", link: "/08-grid-follows-file" },
+      { text: "09 Time-stretch", link: "/09-time-stretch" },
     ],
     sidebar: [
       {
@@ -81,6 +82,7 @@ export default withMermaid(defineConfig({
           { text: "06 Fixing a beat map by hand", link: "/06-repair" },
           { text: "07 Ticks are fractional beats", link: "/07-ppqn-grid" },
           { text: "08 The grid follows the file", link: "/08-grid-follows-file" },
+          { text: "09 Stretching time, keeping pitch", link: "/09-time-stretch" },
         ],
       },
     ],

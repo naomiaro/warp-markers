@@ -1,0 +1,22 @@
+{
+  "name": "@warp-math/time-stretch",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@warp-math/beats-io": "*",
+    "@warp-math/ppqn-grid": "*",
+    "@warp-math/the-math": "*"
+  },
+  "devDependencies": {
+    "vite": "^5.4.0",
+    "vitest": "^2.1.0"
+  },
+  "description": "Chapter 09 — granular time-stretch scheduling math: the chapter-07 warp rates consumed without bending pitch"
+}
