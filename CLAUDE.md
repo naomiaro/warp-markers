@@ -4,7 +4,7 @@
 An educational walkthrough of tempo-map / warp-marker math: pure functions, an
 integral made visible, the same math driving Web Audio, the meter layer as a
 separate concern, and an anomaly-detection chapter for real beat-tracker data.
-Eleven npm workspaces; chapters are read in order.
+Twelve npm workspaces; chapters are read in order.
 
 ```
 01-the-math       @warp-math/the-math       integral + 4 BPM regimes (closed-form ×3, numerical ×1) + pin()
@@ -16,6 +16,7 @@ Eleven npm workspaces; chapters are read in order.
 07-ppqn-grid      @warp-math/ppqn-grid      tick ↔ β ↔ second + alignBeats/segmentRates (warp onto a grid)
 08-grid-follows-file  @warp-math/grid-follows-file  inverse warp via @dawcore/transport: beat map → tempo events, audio untouched
 09-time-stretch   @warp-math/time-stretch   granular scheduling math: ch07 rates sampled as grains, pitch untouched
+10-bar-arithmetic @warp-math/bar-arithmetic barAtTick atlas: bar numbers across meter changes, proven vs MeterMap
 shared-beats-io   @warp-math/beats-io       .beats TSV parse/export + meterMapFromBeats (shared by chapters)
 docs              @warp-math/docs           VitePress + KaTeX math + Vue demos that import chapter math
 ```
@@ -29,7 +30,7 @@ docs              @warp-math/docs           VitePress + KaTeX math + Vue demos t
 - **Small, labelled commits per task.** Commit messages favor "why" over "what."
 
 ## Tests
-- `npm test` at the repo root runs all workspaces (Vitest). Last known: 21 + 8 + 8 + 5 + 11 + 15 + 21 + 21 = 110 green.
+- `npm test` at the repo root runs all workspaces (Vitest). Last known: 21 + 8 + 8 + 5 + 11 + 15 + 21 + 21 + 21 = 131 green.
 - **Known defects in the real beat-map samples** (repaired per issue #10): `otherside.beats` row 56 is a ghost beat (0.100 s gap; the "5/4 bar" is tracker noise, not a meter change — don't cite it as a true meter-change fixture), and `scar_tissue.beats` ends with a phantom 1-beat bar (final beat mislabeled beatInBar=1). `bastard.beats` (Ben Folds) is the GENUINE mixed-meter fixture — 73 meter regions, bars of 1–7 beats, clean beat times — though its many 1/4 bars are partly tracker phase noise. The repair pipeline (ch05 detect → ch06 localize/repair → beats-io export → ch08 conform) lives in `08-grid-follows-file/repair-pipeline.test.js`; `otherside-repaired.beats` is its byte-for-byte output and a regeneration guard asserts that.
 - Planned chapters and deferred follow-ups are GitHub issues (`gh issue list`) — currently #8 meter-change chapter (needs a genuine 3/4↔4/4 fixture), #9 pitch-preserving time-stretch, #10 meter-layer repair on real data. Check before proposing new chapter work.
 - **Chapter 08's tests import `@dawcore/transport` (published npm dist) in Node** — its `TempoMap` is pure (no AudioContext at construction), so the three-way equivalence tests (chapter-01 map ↔ chapter-08 reference ↔ production TempoMap) run headless without mocks.
