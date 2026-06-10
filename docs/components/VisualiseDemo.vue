@@ -175,11 +175,14 @@ function onPointerUp(evt) {
   }
 }
 
+// Structural params rebuild the piecewise model (discarding any drag), but
+// the beta cursor only moves the shaded-area overlay -- keep it OUT of this
+// watcher or every cursor move would silently erase dragged markers.
 watch(
   () => [
     ui.regime, ui.constantBpm, ui.rampStart, ui.rampEnd, ui.rampLength,
     ui.curvedStart, ui.curvedEnd, ui.curvedLength, ui.curvedK,
-    ui.cursor, ui.piecewiseBpms.join(","),
+    ui.piecewiseBpms.join(","),
   ],
   () => {
     if (ui.regime === "piecewise") {
@@ -190,6 +193,7 @@ watch(
     render();
   }
 );
+watch(() => ui.cursor, render);
 
 function buildCharts() {
   tempoChart?.destroy();
