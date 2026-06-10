@@ -76,6 +76,17 @@ const state = {
 function applyTempoMap() {
   if (!transport) return; // engine still bootstrapping
   transport.stop();
+  // Set the display BPM BEFORE installing the tempo events. The editor.bpm
+  // setter forwards to engine.setTempo, which writes the adapter's tempo
+  // map at tick 0 -- assigning it AFTER the events would overwrite the
+  // tick-0 entry with the median and shift every beat off the grid by a
+  // constant offset (upstream measured 97 ms on a real file).
+  if (state.conformOn && state.plan) {
+    const bpms = state.plan.events.map((e) => e.bpm).sort((a, b) => a - b);
+    editor.bpm = Math.round(bpms[Math.floor(bpms.length / 2)]);
+  } else {
+    editor.bpm = state.projectBpm;
+  }
   transport.clearTempos();
   transport.clearMeters();
   if (state.conformOn && state.plan) {
@@ -87,14 +98,10 @@ function applyTempoMap() {
       transport.setMeter(m.numerator, m.denominator, m.tick);
     }
     editor.meterEntries = state.plan.meterEntries;
-    // Ruler label: the median segment BPM reads better than the first.
-    const bpms = state.plan.events.map((e) => e.bpm).sort((a, b) => a - b);
-    editor.bpm = Math.round(bpms[Math.floor(bpms.length / 2)]);
   } else {
     transport.setMeter(4, 4);
     transport.setTempo(state.projectBpm, 0);
     editor.meterEntries = [];
-    editor.bpm = state.projectBpm;
   }
   editor.secondsToTicks = (s) => transport.timeToTick(s);
   editor.ticksToSeconds = (t) => transport.tickToTime(t);
@@ -137,7 +144,15 @@ function repositionClip() {
 async function loadBeatsFromText(text, sourceLabel) {
   try {
     await initPromise;
-    const parsed = parseBeats(text);
+    // Drop near-duplicate detections before planning: a near-zero gap
+    // means an absurd per-segment BPM, which the transport's TempoMap
+    // (rightly) rejects since its input validation landed. 50 ms is a
+    // 1200 BPM ceiling -- same policy as the upstream example. Chapter 05
+    // is the principled treatment; this is the demo being forgiving.
+    const MIN_BEAT_INTERVAL = 0.05;
+    const parsed = parseBeats(text).filter(
+      (b, i, arr) => i === 0 || b.second - arr[i - 1].second >= MIN_BEAT_INTERVAL
+    );
     const plan = gridPlanFromBeats(parsed, PPQN);
     state.plan = plan;
     applyTempoMap();
@@ -207,32 +222,10 @@ $("project-bpm").addEventListener("input", (e) => {
   if (!state.conformOn) applyTempoMap();
 });
 
-// ---------------------------------------------------------------------------
-// Playhead sync: in beats scale-mode the playhead must advance through the
-// tempo map, not linearly -- the editor exposes a map-driven animation for
-// exactly this (the production example's pattern).
-// ---------------------------------------------------------------------------
-function playheadEl() {
-  return editor.shadowRoot?.querySelector("daw-playhead");
-}
-editor.addEventListener("daw-play", () => {
-  if (!transport) return;
-  playheadEl()?.startBeatsAnimationWithMap(
-    () => transport.getCurrentTime(),
-    (s) => transport.timeToTick(s),
-    editor.ticksPerPixel
-  );
-});
-const stopPlayhead = () => {
-  if (!transport) return;
-  playheadEl()?.stopBeatsAnimationWithMap(
-    transport.getCurrentTime(),
-    (s) => transport.timeToTick(s),
-    editor.ticksPerPixel
-  );
-};
-editor.addEventListener("daw-pause", stopPlayhead);
-editor.addEventListener("daw-stop", stopPlayhead);
+// NOTE: no custom playhead wiring. daw-editor already animates the
+// playhead through the secondsToTicks bridge with latency compensation;
+// re-driving it from raw transport time (the old upstream pattern) undid
+// that compensation. Removed upstream in waveform-playlist#406.
 
 // ---------------------------------------------------------------------------
 // Readouts: bar.beat position and the tempo in force, from the transport.
