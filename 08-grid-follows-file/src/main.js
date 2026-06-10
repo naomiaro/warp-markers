@@ -59,14 +59,22 @@ function applyTempoMap() {
   transport.stop();
   transport.clearTempos();
   transport.clearMeters();
-  transport.setMeter(4, 4);
   if (state.conformOn && state.plan) {
     for (const e of state.plan.events) transport.setTempo(e.bpm, e.tick);
+    // Meter from the FILE's declared downbeats -- including irregular
+    // bars (a lone 5/4 in a 4/4 song), so every downbeat stays on a bar
+    // line. Index-based 4/4 would drift at the first irregularity.
+    for (const m of state.plan.meterEntries) {
+      transport.setMeter(m.numerator, m.denominator, m.tick);
+    }
+    editor.meterEntries = state.plan.meterEntries;
     // Ruler label: the median segment BPM reads better than the first.
     const bpms = state.plan.events.map((e) => e.bpm).sort((a, b) => a - b);
     editor.bpm = Math.round(bpms[Math.floor(bpms.length / 2)]);
   } else {
+    transport.setMeter(4, 4);
     transport.setTempo(state.projectBpm, 0);
+    editor.meterEntries = [];
     editor.bpm = state.projectBpm;
   }
   editor.secondsToTicks = (s) => transport.timeToTick(s);
@@ -117,6 +125,7 @@ async function loadBeatsFromText(text, sourceLabel) {
       `${sourceLabel}: ${plan.markers.length} beats · ` +
       `pickup ${plan.pickupBeats} · first downbeat at bar ` +
       `${plan.firstDownbeatTick / plan.ticksPerBar + 1} (tick ${plan.firstDownbeatTick}) · ` +
+      `${plan.meterEntries.length} meter entr${plan.meterEntries.length === 1 ? "y" : "ies"} · ` +
       `clip at ${plan.clipStartSec.toFixed(3)} s`;
   } catch (err) {
     state.plan = null;
@@ -138,6 +147,11 @@ $("use-sample-beats").addEventListener("click", async () => {
 $("use-pickup-beats").addEventListener("click", async () => {
   const res = await fetch(`${import.meta.env.BASE_URL}samples/pickup.beats`);
   await loadBeatsFromText(await res.text(), "pickup.beats");
+});
+
+$("use-otherside-beats").addEventListener("click", async () => {
+  const res = await fetch(`${import.meta.env.BASE_URL}samples/otherside.beats`);
+  await loadBeatsFromText(await res.text(), "otherside.beats");
 });
 
 // ---------------------------------------------------------------------------
@@ -233,7 +247,7 @@ function renderEventsTable() {
   };
   // One row per SEGMENT event (skip the synthetic lead-in event at tick 0
   // when present -- it has no beat-tracker timestamp to check against).
-  const segmentEvents = events.filter((e, i) => !(firstBeatTick > 0 && i === 0));
+  const segmentEvents = events.filter((_, i) => !(firstBeatTick > 0 && i === 0));
   const N = Math.min(segmentEvents.length, 60);
   for (let i = 0; i < N; i++) {
     const e = segmentEvents[i];
