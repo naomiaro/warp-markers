@@ -178,7 +178,7 @@ const segInputs = [$("seg1-bpm"), $("seg2-bpm"), $("seg3-bpm")];
 const segReadouts = [readouts.seg1, readouts.seg2, readouts.seg3];
 segInputs.forEach((input, i) => {
   input.addEventListener("input", () => {
-    ui.piecewiseBpms[i] = +input.value;
+    ui.piecewiseBpms = ui.piecewiseBpms.map((v, k) => (k === i ? +input.value : v));
     segReadouts[i].value = input.value;
     // Slider use overrides any in-progress dragged model -- the slider is
     // the user's most recent intent.
