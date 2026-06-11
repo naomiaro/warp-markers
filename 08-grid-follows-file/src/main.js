@@ -76,11 +76,13 @@ const state = {
 function applyTempoMap() {
   if (!transport) return; // engine still bootstrapping
   transport.stop();
-  // Set the display BPM BEFORE installing the tempo events. The editor.bpm
-  // setter forwards to engine.setTempo, which writes the adapter's tempo
-  // map at tick 0 -- assigning it AFTER the events would overwrite the
-  // tick-0 entry with the median and shift every beat off the grid by a
-  // constant offset (upstream measured 97 ms on a real file).
+  // Display BPM for the readout. Safe in any order since @dawcore 0.0.23 /
+  // 0.0.12 (wfp#407): once the secondsToTicks/ticksToSeconds callbacks are
+  // assigned (first apply, below), editor.bpm is display-only and never
+  // touches the tempo map; the transport also refuses defaulted tick-0
+  // writes on multi-entry maps. On the very first apply the callbacks
+  // aren't set yet, but the map is fresh single-entry and clearTempos()
+  // below overwrites the write anyway.
   if (state.conformOn && state.plan) {
     const bpms = state.plan.events.map((e) => e.bpm).sort((a, b) => a - b);
     editor.bpm = Math.round(bpms[Math.floor(bpms.length / 2)]);
