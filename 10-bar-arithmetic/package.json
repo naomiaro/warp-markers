@@ -8,7 +8,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@dawcore/transport": "^0.0.11",
+    "@dawcore/transport": "^0.0.12",
     "@warp-math/beats-io": "*",
     "@warp-math/grid-follows-file": "*"
   },

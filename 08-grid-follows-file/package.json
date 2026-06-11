@@ -11,8 +11,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@dawcore/components": "^0.0.22",
-    "@dawcore/transport": "^0.0.11",
+    "@dawcore/components": "^0.0.23",
+    "@dawcore/transport": "^0.0.12",
     "@warp-math/beats-io": "*",
     "@warp-math/messy-data": "*",
     "@warp-math/repair": "*",
