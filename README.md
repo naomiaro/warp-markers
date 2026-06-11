@@ -4,10 +4,15 @@ An educational repo for the mathematics behind tempo maps and warp markers — t
 machinery a DAW uses to pin a moment in an audio file to a beat on a musical grid,
 and to stretch time between those pins.
 
-It is built to be read in order. Each folder raises the fidelity by one step:
-pure math you can unit-test, then an interactive visualisation, then the same math
-driving real audio playback from a [beat_this](https://github.com/CPJKU/beat_this)
-beat map.
+It is built to be read in order — ten chapters and an appendix. Each folder raises
+the fidelity by one step: pure math you can unit-test, then an interactive
+visualisation, then the same math driving real audio playback from a
+[beat_this](https://github.com/CPJKU/beat_this) beat map, then meter, then messy
+data and its repair, then the DAW tick grid, and finally the three ways a DAW
+reconciles a file with its grid — bend the sound, bend the grid, or bend neither.
+A companion [documentation site](https://naomiaro.github.io/warp-markers/) renders
+the math with KaTeX and embeds live demos that import the chapter code directly, so
+the pictures and the math can never drift apart.
 
 ## The one idea
 
@@ -76,12 +81,26 @@ time running backwards, and the code rejects it.
 ## Layout
 
 ```
-01-the-math/      pure functions, no audio, fully unit-tested. Read this first.
-02-visualise/     the integral made visible: tempo curve + draggable warp map.
-03-real-audio/    parse a beat_this .beats file and play it back through the map.
-04-meter/         the second layer: bar arithmetic. No calculus, just modulo.
-05-messy-data/    when the data is messy: anomaly detection on real beat maps.
+01-the-math/          pure functions, no audio, fully unit-tested. Read this first.
+02-visualise/         the integral made visible: tempo curve + draggable warp map.
+03-real-audio/        parse a beat_this .beats file and play it back through the map.
+04-meter/             the second layer: bar arithmetic. No calculus, just modulo.
+05-messy-data/        anomaly detection on real beat maps — see the problems.
+06-repair/            fix the problems: insert/delete/move markers, validated against meter.
+07-ppqn-grid/         the DAW tick grid: tick ↔ beat ↔ second, and warping onto it.
+08-grid-follows-file/ bend the grid: the beat map becomes the tempo map, audio untouched.
+09-time-stretch/      bend the file: the same rates, granular, with pitch preserved.
+10-bar-arithmetic/    bar numbers across meter changes, proven against a production MeterMap.
+shared-beats-io/      .beats TSV parse/export, shared by the chapters.
+docs/                 the VitePress site: KaTeX math + live Vue demos importing chapter code.
 ```
+
+Everything runs as npm workspaces; `npm test` at the repo root runs every chapter's
+Vitest suite. Chapters 01–07 stay on plain Web Audio; chapters 08 and 10 bridge the
+tutorial math into the maintainer's production
+[`@dawcore/transport`](https://www.npmjs.com/package/@dawcore/transport) and prove
+the two agree to the sample. The appendix, [docs/in-the-wild.md](docs/in-the-wild.md),
+maps every step back to a commercial DAW.
 
 ### 01-the-math
 Three map functions (`constantMap`, `piecewiseConstantMap`, `linearRampMap`), each
@@ -137,6 +156,52 @@ seconds axis going backwards, which makes the inverse undefined). The interactiv
 inspector renders the BPM line so dropped beats appear as dips and doubled beats
 appear as spikes, with flagged segments in red. The chapter stops at detection;
 fixing is a judgement call, which is exactly why warp markers are hand-editable.
+
+### 06-repair
+Chapter 05 *sees* the problems; this one *fixes* them. Three repair operations —
+insert a missing beat, delete a doubled one, move a mistimed one — each re-pinned so
+the rest of the map follows, with `validateAgainstMeter` checking the result against
+the downbeat spacing so a repair can't quietly break the bar structure. The
+interactive editor is the hand-repair UI every DAW ships behind its clip view, made
+explicit.
+
+### 07-ppqn-grid
+The DAW's internal clock. A **tick** is an integer subdivision of a beat (PPQN —
+pulses per quarter note), tick 0 anchored at musical position 1.1.0, so
+`β = tick/PPQN + 1`. This chapter is the three-way conversion `tick ↔ β ↔ second`
+and the act of *warping* a loose beat list onto that rigid grid: `alignBeats` snaps
+detected beats to the nearest tick, and `segmentRates` reports the playback rate each
+segment needs to land on it.
+
+### 08-grid-follows-file
+The first leaf of the warp triptych: **bend the grid, not the sound.** The detected
+beat map becomes the project's tempo map — the grid conforms to the file and the
+audio is never touched. This chapter bridges the tutorial math into the maintainer's
+production `@dawcore/transport`, whose `TempoMap` implements the same three regimes
+chapter 01 derives; a test suite proves the chapter-01 map, this chapter's reference,
+and the shipped `TempoMap` all agree to the sample.
+
+### 09-time-stretch
+The second leaf: **bend the file to the grid, with pitch preserved.** The same
+`segmentRates()` from chapter 07 — there it drove a single `playbackRate` (varispeed,
+pitch moves with it) — here feeds a granular scheduler that samples each rate as a
+stream of grains, stretching time while leaving pitch alone. One set of rates, two
+consumers: exactly the warp-mode switch a DAW exposes without touching the markers.
+
+### 10-bar-arithmetic
+Bar numbers when the meter itself changes. `barAtTick` is an atlas that walks meter
+regions to answer "what bar and beat is this tick?" across 4/4 → 3/4 → 7/8
+boundaries, proven against `@dawcore/transport`'s production `MeterMap`. It is built
+on real mixed-meter beat data, where automatic downbeat detection is the weakest link
+— part music, part tracker noise, and telling them apart is chapter 06's judgement
+call, not arithmetic.
+
+### Appendix · In the wild
+Where do beat maps come from in commercial DAWs? [docs/in-the-wild.md](docs/in-the-wild.md)
+traces what happens in the second after you drag audio into Ableton, Logic, or
+Reaper — metadata first, then loop-length arithmetic, then cached MIR analysis, then
+the one genuinely musical decision (who bends, the file or the grid?) handed to the
+user — and maps each step to the chapter that models it.
 
 ## Meter is not tempo
 
